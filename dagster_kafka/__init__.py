@@ -1,6 +1,20 @@
-﻿from dagster_kafka.resources import KafkaResource
-from dagster_kafka.io_manager import KafkaIOManager
+﻿"""Dagster Kafka Integration Package
 
-__version__ = "0.1.0"
+Provides Kafka integration for Dagster data pipelines with support for:
+- JSON message consumption
+- Avro message consumption with Schema Registry support
+- Configurable consumer groups and connection settings
+"""
 
-__all__ = ["KafkaResource", "KafkaIOManager", "__version__"]
+from .resources import KafkaResource
+from .io_manager import KafkaIOManager
+from .avro_io_manager import AvroKafkaIOManager, avro_kafka_io_manager
+
+__version__ = "0.2.0"
+
+__all__ = [
+    "KafkaResource",
+    "KafkaIOManager",
+    "AvroKafkaIOManager",
+    "avro_kafka_io_manager",
+]
