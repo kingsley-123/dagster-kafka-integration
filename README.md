@@ -1,6 +1,17 @@
 ﻿# Dagster Kafka Integration
+
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
+The **first and most comprehensive Kafka integration for Dagster**, now with full **Avro support**!
+
+## 🚀 Latest: Avro Support Added! (v0.2.0)
+
+After community requests, we've added complete Avro message support:
+- ✅ Local Avro schema files  
+- ✅ Schema Registry integration (Confluent, AWS Glue)
+- ✅ Enterprise-ready error handling
+- ✅ Full test coverage (10 tests passing)
 
 A native Kafka integration for Dagster that enables streaming JSON and Avro data ingestion as Software Defined Assets.
 
@@ -13,14 +24,16 @@ Dagster has 50+ integrations but **no native Kafka support**. Data engineers wor
 
 ## The Solution
 This integration makes Kafka topics **first-class citizens** in Dagster:
-✅ **Native asset materialization** from Kafka topics
-✅ **JSON & Avro schema handling** with automatic parsing
-✅ **Schema Registry integration** for enterprise Avro workflows
-✅ **Built-in observability** and data lineage
-✅ **Production-ready** with proper error handling
-✅ **Simple configuration** - just point to your Kafka cluster
+✅ **Native asset materialization** from Kafka topics  
+✅ **JSON & Avro schema handling** with automatic parsing  
+✅ **Schema Registry integration** for enterprise Avro workflows  
+✅ **Built-in observability** and data lineage  
+✅ **Production-ready** with proper error handling  
+✅ **Simple configuration** - just point to your Kafka cluster  
 
 ## Quick Start
+
+### JSON Messages
 Turn any Kafka topic into a Dagster asset in just a few lines:
 
 ```python
@@ -42,6 +55,17 @@ defs = Definitions(
         )
     }
 )
+Avro Messages (NEW!)
+pythonfrom dagster import asset
+from dagster_kafka import AvroKafkaIOManager
+
+@asset
+def user_events(avro_kafka_io_manager: AvroKafkaIOManager):
+    return avro_kafka_io_manager.load_input(
+        topic="user-events",
+        schema_file="schemas/user.avsc",
+        max_messages=100
+    )
 Why This Matters
 For Data Engineers:
 
@@ -64,7 +88,6 @@ Production Ready: Error handling, logging, and configurable timeouts
 Easy Integration: Simple Dagster asset integration
 
 Core Capabilities
-
 ✅ Kafka Consumer Integration - Read from any Kafka topic
 ✅ JSON Auto-parsing - Automatic JSON deserialization
 ✅ Avro Deserialization - Binary Avro with schema support
@@ -72,7 +95,6 @@ Core Capabilities
 ✅ Asset-based Architecture - Topics become Dagster assets
 ✅ Configurable Consumption - Control message limits and timeouts
 ✅ Error Handling - Graceful handling of malformed data
-
 Configuration
 Basic Configuration
 pythonKafkaIOManager(
@@ -102,7 +124,7 @@ def analytics_data(avro_kafka_io_manager: AvroKafkaIOManager):
         schema_id=123,  # Schema ID from registry
         max_messages=50
     )
-Avro Configuration
+Complete Avro Configuration
 pythonfrom dagster import Definitions
 from dagster_kafka import KafkaResource, avro_kafka_io_manager
 
@@ -115,6 +137,31 @@ defs = Definitions(
         })
     }
 )
+Installation
+bash# Clone the repository
+git clone https://github.com/kingsley-123/dagster-kafka-integration.git
+cd dagster-kafka-integration
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install in development mode
+pip install -e .
+Testing
+bash# Run all tests
+python -m pytest tests/ -v
+
+# Test Avro functionality specifically
+python -m pytest tests/test_avro_io_manager.py -v
+
+# Run the simple test
+python examples/avro_examples/simple_avro_test.py
+Examples
+
+JSON Examples: See examples/ directory
+Avro Examples: See examples/avro_examples/ directory
+Sample Schemas: See examples/schemas/ directory
+
 Roadmap
 Potential Future Enhancements
 
@@ -122,6 +169,7 @@ Potential Future Enhancements
 🔐 Security Features - SASL/SSL for production clusters
 📦 PyPI Distribution - Official package release
 🤝 Official Integration - Potential inclusion in Dagster core
+🔄 Additional Formats - Protobuf, MessagePack support
 
 Roadmap driven by community feedback and real-world usage.
 Contributing
@@ -135,5 +183,11 @@ Ways to contribute:
 
 License
 Apache 2.0 - see LICENSE file for details.
+Community
+
+GitHub Issues: Report bugs and request features
+Discussions: Share use cases and get help
+Star the repo: If this helped your project!
+
 
 Built by Kingsley Okonkwo - Solving real data engineering problems with open source.
