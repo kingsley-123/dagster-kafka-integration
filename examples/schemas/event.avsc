@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Event",
+  "namespace": "com.example.analytics",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "user_id", "type": "int"},
+    {"name": "event_type", "type": "string"},
+    {"name": "timestamp", "type": "long"},
+    {"name": "properties", "type": {"type": "map", "values": "string"}}
+  ]
+}
