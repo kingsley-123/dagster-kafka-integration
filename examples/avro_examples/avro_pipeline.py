@@ -3,38 +3,49 @@ Example Dagster pipeline using Avro Kafka integration.
 Demonstrates consuming Avro messages from Kafka topics.
 """
 
-from dagster import asset, Definitions
-from dagster_kafka import KafkaResource, AvroKafkaIOManager, avro_kafka_io_manager
+from dagster import asset, Definitions, Config
+from dagster_kafka import KafkaResource, avro_kafka_io_manager
+
+
+class UserEventsConfig(Config):
+    schema_file: str
+    max_messages: int = 10
+
+
+class AnalyticsEventsConfig(Config):
+    schema_id: int
+    max_messages: int = 10
 
 
 # Configure resources
 kafka_resource = KafkaResource(bootstrap_servers="localhost:9092")
 
 
-@asset(
-    io_manager_key="avro_kafka_io_manager",
-    config_schema={"schema_file": str, "max_messages": int}
-)
-def user_events(context, avro_kafka_io_manager: AvroKafkaIOManager):
+@asset(io_manager_key="avro_kafka_io_manager")
+def user_events(context, config: UserEventsConfig):
     """Load user events from Kafka using local Avro schema."""
-    return avro_kafka_io_manager.load_input(
+    # Get the IO manager from context
+    io_manager = context.resources.avro_kafka_io_manager
+    
+    return io_manager.load_input(
         context,
         topic="user-events",
-        schema_file=context.op_config["schema_file"],
-        max_messages=context.op_config.get("max_messages", 10)
+        schema_file=config.schema_file,
+        max_messages=config.max_messages
     )
 
 
-@asset(
-    io_manager_key="avro_kafka_io_manager", 
-    config_schema={"schema_id": int}
-)
-def analytics_events(context, avro_kafka_io_manager: AvroKafkaIOManager):
+@asset(io_manager_key="avro_kafka_io_manager")
+def analytics_events(context, config: AnalyticsEventsConfig):
     """Load analytics events from Kafka using Schema Registry."""
-    return avro_kafka_io_manager.load_input(
+    # Get the IO manager from context
+    io_manager = context.resources.avro_kafka_io_manager
+    
+    return io_manager.load_input(
         context,
         topic="analytics-events",
-        schema_id=context.op_config["schema_id"]
+        schema_id=config.schema_id,
+        max_messages=config.max_messages
     )
 
 

@@ -1,33 +1,26 @@
 ﻿# Dagster Kafka Integration
-
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-A native Kafka integration for Dagster that enables streaming JSON data ingestion as Software Defined Assets.
+A native Kafka integration for Dagster that enables streaming JSON and Avro data ingestion as Software Defined Assets.
 
 ## The Problem
-
-Dagster has 50+ integrations but **no native Kafka support**. Data engineers working with streaming JSON data from APIs had to:
-
+Dagster has 50+ integrations but **no native Kafka support**. Data engineers working with streaming data from APIs had to:
 - Build complex custom solutions
 - Use external tools outside Dagster orchestration
 - Lose observability and data lineage
-- Miss out on Dagster
-'
-s asset-based approach for streaming data
+- Miss out on Dagster's asset-based approach for streaming data
 
 ## The Solution
-
 This integration makes Kafka topics **first-class citizens** in Dagster:
-
 ✅ **Native asset materialization** from Kafka topics
-✅ **JSON schema handling** with automatic parsing
+✅ **JSON & Avro schema handling** with automatic parsing
+✅ **Schema Registry integration** for enterprise Avro workflows
 ✅ **Built-in observability** and data lineage
 ✅ **Production-ready** with proper error handling
 ✅ **Simple configuration** - just point to your Kafka cluster
 
 ## Quick Start
-
 Turn any Kafka topic into a Dagster asset in just a few lines:
 
 ```python
@@ -49,66 +42,98 @@ defs = Definitions(
         )
     }
 )
-```
+Why This Matters
+For Data Engineers:
 
-## Why This Matters
+🚀 10x faster setup - No custom Kafka consumers to write
+📊 Built-in observability - See data flow in Dagster UI
+🔧 Production ready - Error handling, retries, monitoring included
 
-**For Data Engineers:**
-- 🚀 **10x faster setup** - No custom Kafka consumers to write
-- 📊 **Built-in observability** - See data flow in Dagster UI
-- 🔧 **Production ready** - Error handling, retries, monitoring included
+For API Data:
 
-**For API Data:**
-- 📱 **Perfect for JSON APIs** - Automatic parsing and schema handling
-- ⚡ **Real-time processing** - Stream API data directly into your pipelines
-- 🔗 **Data lineage** - Track data from Kafka topic to final destination
+📱 Perfect for JSON APIs - Automatic parsing and schema handling
+⚡ Real-time processing - Stream API data directly into your pipelines
+🔗 Data lineage - Track data from Kafka topic to final destination
 
-## Features
+Features
 
-### Current Features (Phase 1)
-- ✅ **Kafka Consumer Integration** - Read from any Kafka topic
-- ✅ **JSON Auto-parsing** - Automatic JSON deserialization
-- ✅ **Asset-based Architecture** - Topics become Dagster assets
-- ✅ **Configurable Consumption** - Control message limits and timeouts
-- ✅ **Error Handling** - Graceful handling of malformed JSON
-- ✅ **Metadata Enrichment** - Includes partition, offset, timestamp info
+JSON Support: Native JSON message consumption from Kafka topics
+Avro Support: Full Avro message support with Schema Registry integration
+Flexible Schema Management: Local schema files or Schema Registry
+Production Ready: Error handling, logging, and configurable timeouts
+Easy Integration: Simple Dagster asset integration
 
-## Configuration
+Core Capabilities
 
-### Basic Configuration
-```python
-KafkaIOManager(
+✅ Kafka Consumer Integration - Read from any Kafka topic
+✅ JSON Auto-parsing - Automatic JSON deserialization
+✅ Avro Deserialization - Binary Avro with schema support
+✅ Schema Registry Integration - Confluent Schema Registry support
+✅ Asset-based Architecture - Topics become Dagster assets
+✅ Configurable Consumption - Control message limits and timeouts
+✅ Error Handling - Graceful handling of malformed data
+
+Configuration
+Basic Configuration
+pythonKafkaIOManager(
     kafka_resource=KafkaResource(
         bootstrap_servers="localhost:9092"
     ),
     consumer_group_id="my-dagster-consumer",
     max_messages=500
 )
-```
+Avro Support
+Using Local Schema Files
+pythonfrom dagster import asset
+from dagster_kafka import AvroKafkaIOManager
 
-## Roadmap
+@asset
+def user_data(avro_kafka_io_manager: AvroKafkaIOManager):
+    return avro_kafka_io_manager.load_input(
+        topic="user-events",
+        schema_file="schemas/user.avsc",
+        max_messages=100
+    )
+Using Schema Registry
+python@asset  
+def analytics_data(avro_kafka_io_manager: AvroKafkaIOManager):
+    return avro_kafka_io_manager.load_input(
+        topic="analytics-events",
+        schema_id=123,  # Schema ID from registry
+        max_messages=50
+    )
+Avro Configuration
+pythonfrom dagster import Definitions
+from dagster_kafka import KafkaResource, avro_kafka_io_manager
 
-### Potential Future Enhancements
-- 📚 **Enhanced Documentation** - More examples and patterns
-- 🔐 **Security Features** - SASL/SSL for production clusters
-- 📦 **PyPI Distribution** - Official package release
-- 🤝 **Official Integration** - Potential inclusion in Dagster core
+defs = Definitions(
+    assets=[user_data, analytics_data],
+    resources={
+        "kafka": KafkaResource(bootstrap_servers="localhost:9092"),
+        "avro_kafka_io_manager": avro_kafka_io_manager.configured({
+            "schema_registry_url": "http://localhost:8081"
+        })
+    }
+)
+Roadmap
+Potential Future Enhancements
 
-*Roadmap driven by community feedback and real-world usage.*
+📚 Enhanced Documentation - More examples and patterns
+🔐 Security Features - SASL/SSL for production clusters
+📦 PyPI Distribution - Official package release
+🤝 Official Integration - Potential inclusion in Dagster core
 
-## Contributing
-
+Roadmap driven by community feedback and real-world usage.
+Contributing
 Contributions are welcome! This project aims to fill a genuine gap in the Dagster ecosystem.
+Ways to contribute:
 
-**Ways to contribute:**
-- 🐛 **Report issues** - Found a bug? Let us know!
-- 💡 **Feature requests** - What would make this more useful?
-- 📝 **Documentation** - Help improve examples and guides
-- 🔧 **Code contributions** - PRs welcome for any improvements
+🐛 Report issues - Found a bug? Let us know!
+💡 Feature requests - What would make this more useful?
+📝 Documentation - Help improve examples and guides
+🔧 Code contributions - PRs welcome for any improvements
 
-## License
+License
+Apache 2.0 - see LICENSE file for details.
 
-Apache 2.0 - see [LICENSE](LICENSE) file for details.
-
----
-**Built by [Kingsley Okonkwo](https://github.com/kingsley-123) - Solving real data engineering problems with open source.**
+Built by Kingsley Okonkwo - Solving real data engineering problems with open source.
