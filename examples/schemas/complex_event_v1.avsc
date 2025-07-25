@@ -1,0 +1,67 @@
+{
+  "type": "record",
+  "name": "ComplexEvent",
+  "namespace": "com.production.events",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "timestamp", "type": "long"},
+    {"name": "event_type", "type": {"type": "enum", "name": "EventType", "symbols": ["USER_ACTION", "SYSTEM_EVENT", "ERROR_EVENT", "AUDIT_EVENT"]}},
+    {"name": "user_context", "type": [
+      "null",
+      {
+        "type": "record",
+        "name": "UserContext",
+        "fields": [
+          {"name": "user_id", "type": "string"},
+          {"name": "session_id", "type": ["null", "string"], "default": null},
+          {"name": "device_info", "type": {
+            "type": "record",
+            "name": "DeviceInfo", 
+            "fields": [
+              {"name": "device_type", "type": "string"},
+              {"name": "os_version", "type": "string"},
+              {"name": "app_version", "type": "string"},
+              {"name": "screen_resolution", "type": ["null", "string"], "default": null}
+            ]
+          }},
+          {"name": "location", "type": [
+            "null",
+            {
+              "type": "record",
+              "name": "Location",
+              "fields": [
+                {"name": "country", "type": "string"},
+                {"name": "region", "type": ["null", "string"], "default": null},
+                {"name": "city", "type": ["null", "string"], "default": null},
+                {"name": "coordinates", "type": [
+                  "null",
+                  {
+                    "type": "record",
+                    "name": "Coordinates",
+                    "fields": [
+                      {"name": "latitude", "type": "double"},
+                      {"name": "longitude", "type": "double"}
+                    ]
+                  }
+                ], "default": null}
+              ]
+            }
+          ], "default": null}
+        ]
+      }
+    ], "default": null},
+    {"name": "event_data", "type": {"type": "map", "values": ["null", "string", "long", "double", "boolean"]}},
+    {"name": "tags", "type": {"type": "array", "items": "string"}, "default": []},
+    {"name": "metadata", "type": {
+      "type": "record",
+      "name": "EventMetadata",
+      "fields": [
+        {"name": "source_system", "type": "string"},
+        {"name": "correlation_id", "type": ["null", "string"], "default": null},
+        {"name": "batch_id", "type": ["null", "string"], "default": null},
+        {"name": "processing_flags", "type": {"type": "map", "values": "boolean"}, "default": {}},
+        {"name": "schema_version", "type": "string", "default": "1.0.0"}
+      ]
+    }}
+  ]
+}
