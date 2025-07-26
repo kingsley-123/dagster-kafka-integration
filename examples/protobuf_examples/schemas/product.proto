@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package examples;
+
+// Product information
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string currency = 5;
+  string category = 6;
+  string brand = 7;
+  bool in_stock = 8;
+  int32 quantity = 9;
+  repeated string image_urls = 10;
+  
+  // Product attributes
+  map<string, string> attributes = 11;
+  
+  // Timestamps
+  int64 created_at = 12;
+  int64 updated_at = 13;
+}
+
+// Product event types
+enum ProductEventType {
+  PRODUCT_CREATED = 0;
+  PRODUCT_UPDATED = 1;
+  PRODUCT_DELETED = 2;
+  PRODUCT_VIEWED = 3;
+  PRODUCT_PURCHASED = 4;
+  INVENTORY_UPDATED = 5;
+}
+
+// Product event message
+message ProductEvent {
+  ProductEventType event_type = 1;
+  Product product = 2;
+  int64 timestamp = 3;
+  string user_id = 4;
+  string session_id = 5;
+  map<string, string> context = 6;
+}
+
+// Order information
+message Order {
+  string order_id = 1;
+  string user_id = 2;
+  repeated OrderItem items = 3;
+  double total_amount = 4;
+  string currency = 5;
+  OrderStatus status = 6;
+  int64 created_at = 7;
+}
+
+message OrderItem {
+  string product_id = 1;
+  int32 quantity = 2;
+  double unit_price = 3;
+}
+
+enum OrderStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  SHIPPED = 2;
+  DELIVERED = 3;
+  CANCELLED = 4;
+}

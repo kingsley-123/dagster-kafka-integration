@@ -1,38 +1,42 @@
 ﻿# Dagster Kafka Integration
 
-The **first and most comprehensive Kafka integration for Dagster** with complete enterprise-grade features.
+The first and most comprehensive Kafka integration for Dagster with complete enterprise-grade features supporting all three major serialization formats.
 
-## Production Ready Release
+## Complete Enterprise Solution
 
-Complete production system with enterprise features:
-- Schema evolution validation with 7 compatibility levels
-- Real-time monitoring and alerting system
-- High-performance caching, batching, and connection pooling
-- Comprehensive error handling and recovery strategies
-- Full test coverage with 73 tests passing
-
-**Version 0.6.0** - Enterprise production ready
-
-## Features
+**Version 0.7.0** - The definitive Kafka integration with full serialization support:
 
 - **JSON Support**: Native JSON message consumption from Kafka topics
-- **Avro Support**: Full Avro message support with Schema Registry integration
-- **Schema Evolution**: Comprehensive validation with breaking change detection
+- **Avro Support**: Full Avro message support with Schema Registry integration  
+- **Protobuf Support**: Complete Protocol Buffers integration with schema management
+- **Schema Evolution**: Comprehensive validation with breaking change detection across all formats
 - **Production Monitoring**: Real-time alerting with Slack/Email integration
 - **High Performance**: Advanced caching, batching, and connection pooling
 - **Error Recovery**: Multiple recovery strategies for production resilience
-- **Flexible Configuration**: Local schema files or Schema Registry
 - **Enterprise Ready**: Complete observability and production-grade error handling
 
-## Quick Start
+**81 comprehensive tests passing** - Full test coverage across all serialization formats and enterprise features.
 
-### Installation
+## Three Serialization Formats Supported
+
+### JSON Support
+Perfect for APIs and simple data structures.
+
+### Avro Support 
+Schema Registry integration with evolution validation.
+
+### Protobuf Support
+High-performance binary serialization with comprehensive tooling.
+
+## Installation
 
 ```bash
 pip install git+https://github.com/kingsley-123/dagster-kafka-integration.git
 ```
 
-### Basic JSON Usage
+## Quick Start
+
+### JSON Usage
 
 ```python
 from dagster import asset, Definitions
@@ -41,7 +45,6 @@ from dagster_kafka import KafkaResource, KafkaIOManager
 @asset
 def api_events():
     """Consume JSON messages from Kafka topic."""
-    # Messages automatically loaded from 'api_events' topic
     pass
 
 defs = Definitions(
@@ -56,9 +59,7 @@ defs = Definitions(
 )
 ```
 
-## Avro Support with Schema Evolution
-
-### Using Local Schema Files
+### Avro Usage with Schema Registry
 
 ```python
 from dagster import asset, Config
@@ -70,7 +71,7 @@ class UserEventsConfig(Config):
 
 @asset(io_manager_key="avro_kafka_io_manager")
 def user_data(context, config: UserEventsConfig):
-    """Load user events using local Avro schema with validation."""
+    """Load user events using Avro schema with validation."""
     io_manager = context.resources.avro_kafka_io_manager
     return io_manager.load_input(
         context,
@@ -81,62 +82,145 @@ def user_data(context, config: UserEventsConfig):
     )
 ```
 
-### Using Schema Registry with Evolution Validation
+### Protobuf Usage
 
 ```python
-from dagster import asset, Config
-from dagster_kafka import KafkaResource, avro_kafka_io_manager, CompatibilityLevel
+from dagster import asset, Definitions
+from dagster_kafka import KafkaResource
+from dagster_kafka.protobuf_io_manager import create_protobuf_kafka_io_manager
 
-class AnalyticsConfig(Config):
-    schema_id: int = 123
-    max_messages: int = 50
+@asset(io_manager_key="protobuf_kafka_io_manager")
+def user_events():
+    """Consume Protobuf messages from Kafka topic."""
+    pass
 
-@asset(io_manager_key="avro_kafka_io_manager")
-def analytics_data(context, config: AnalyticsConfig):
-    """Load analytics events from Schema Registry with compatibility checking."""
-    io_manager = context.resources.avro_kafka_io_manager
-    return io_manager.load_input(
-        context,
-        topic="analytics-events",
-        schema_id=config.schema_id,
-        max_messages=config.max_messages
-    )
+@asset
+def processed_data(user_events):
+    """Process Protobuf user events."""
+    print(f"Processing {len(user_events)} Protobuf events")
+    return {"processed_count": len(user_events)}
+
+defs = Definitions(
+    assets=[user_events, processed_data],
+    resources={
+        "protobuf_kafka_io_manager": create_protobuf_kafka_io_manager(
+            kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+            schema_registry_url="http://localhost:8081",  # Optional
+            consumer_group_id="dagster-protobuf-pipeline"
+        )
+    }
+)
 ```
 
-### Complete Production Configuration
+### Advanced Protobuf with Schema Registry
+
+```python
+from dagster_kafka.protobuf_io_manager import ProtobufKafkaIOManager
+
+protobuf_manager = ProtobufKafkaIOManager(
+    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+    schema_registry_url="http://localhost:8081",
+    enable_schema_validation=True,
+    compatibility_level="BACKWARD",
+    consumer_group_id="enterprise-protobuf-consumer"
+)
+```
+
+## All Three Formats in One Pipeline
 
 ```python
 from dagster import Definitions
-from dagster_kafka import (
-    KafkaResource, 
-    avro_kafka_io_manager, 
-    SchemaEvolutionMonitor,
-    PerformanceOptimizer,
-    RecoveryStrategy
-)
+from dagster_kafka import KafkaResource, KafkaIOManager, avro_kafka_io_manager
+from dagster_kafka.protobuf_io_manager import create_protobuf_kafka_io_manager
 
-# Production configuration with monitoring and performance optimization
 defs = Definitions(
-    assets=[user_data, analytics_data],
+    assets=[json_events, avro_events, protobuf_events, unified_processing],
     resources={
-        "kafka": KafkaResource(bootstrap_servers="localhost:9092"),
-        "avro_kafka_io_manager": avro_kafka_io_manager.configured({
+        "json_io_manager": KafkaIOManager(
+            kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+            consumer_group_id="json-consumer"
+        ),
+        "avro_io_manager": avro_kafka_io_manager.configured({
             "schema_registry_url": "http://localhost:8081",
-            "enable_schema_validation": True,
-            "compatibility_level": "BACKWARD",
-            "recovery_strategy": RecoveryStrategy.FALLBACK_SCHEMA
+            "enable_schema_validation": True
         }),
-        "monitor": SchemaEvolutionMonitor(),
-        "performance": PerformanceOptimizer()
+        "protobuf_io_manager": create_protobuf_kafka_io_manager(
+            kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+            schema_registry_url="http://localhost:8081"
+        )
     }
 )
+```
+
+## Schema Examples
+
+### Avro Schema
+
+```json
+{
+  "type": "record",
+  "name": "User",
+  "namespace": "com.example.users",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"},
+    {"name": "email", "type": "string"},
+    {"name": "created_at", "type": "long"},
+    {"name": "is_active", "type": "boolean"}
+  ]
+}
+```
+
+### Protobuf Schema
+
+```protobuf
+syntax = "proto3";
+
+package examples;
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+  bool is_active = 5;
+  repeated string tags = 6;
+  Address address = 7;
+  int64 created_at = 8;
+  int64 updated_at = 9;
+}
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string postal_code = 4;
+  string country = 5;
+}
+
+enum EventType {
+  USER_CREATED = 0;
+  USER_UPDATED = 1;
+  USER_DELETED = 2;
+  USER_LOGIN = 3;
+  USER_LOGOUT = 4;
+}
+
+message UserEvent {
+  EventType event_type = 1;
+  User user = 2;
+  int64 timestamp = 3;
+  string source_system = 4;
+  map<string, string> metadata = 5;
+}
 ```
 
 ## Schema Evolution Management
 
 ### Compatibility Levels
 
-Support for all major compatibility levels:
+Support for all major compatibility levels across JSON, Avro, and Protobuf:
+
 - **BACKWARD**: New schema can read old data
 - **FORWARD**: Old schema can read new data  
 - **FULL**: Both backward and forward compatible
@@ -152,7 +236,6 @@ from dagster_kafka import SchemaEvolutionValidator
 
 validator = SchemaEvolutionValidator(schema_registry_client)
 
-# Validate compatibility before deployment
 result = validator.validate_schema_compatibility(
     "user-events-value",
     new_schema,
@@ -170,11 +253,9 @@ if not result["compatible"]:
 ```python
 from dagster_kafka import SchemaEvolutionMonitor, slack_alert_handler
 
-# Initialize monitoring with Slack alerts
 monitor = SchemaEvolutionMonitor()
 monitor.add_alert_callback(slack_alert_handler("https://hooks.slack.com/your-webhook"))
 
-# Record metrics
 monitor.record_validation_attempt(
     subject="user-events",
     success=True,
@@ -188,7 +269,6 @@ monitor.record_validation_attempt(
 ```python
 from dagster_kafka import PerformanceOptimizer, CacheStrategy, BatchStrategy
 
-# High-performance configuration
 optimizer = PerformanceOptimizer(
     cache_config={
         "max_size": 10000,
@@ -203,9 +283,6 @@ optimizer = PerformanceOptimizer(
         "max_connections": 20
     }
 )
-
-# Get performance recommendations
-recommendations = optimizer.optimize_for_throughput()
 ```
 
 ## Configuration Options
@@ -232,116 +309,115 @@ avro_kafka_io_manager.configured({
 })
 ```
 
-## Sample Avro Schemas
+### Protobuf Configuration Options
 
-### User Schema (`schemas/user.avsc`)
+```python
+# Simple Protobuf usage
+simple_manager = create_protobuf_kafka_io_manager(
+    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+    consumer_group_id="my-protobuf-consumer"
+)
 
-```json
-{
-  "type": "record",
-  "name": "User",
-  "namespace": "com.example.users",
-  "fields": [
-    {"name": "id", "type": "int"},
-    {"name": "name", "type": "string"},
-    {"name": "email", "type": "string"},
-    {"name": "created_at", "type": "long"},
-    {"name": "is_active", "type": "boolean"}
-  ]
-}
+# Advanced Protobuf with Schema Registry
+advanced_manager = ProtobufKafkaIOManager(
+    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+    schema_registry_url="http://localhost:8081",
+    enable_schema_validation=True,
+    compatibility_level="BACKWARD",
+    consumer_group_id="enterprise-protobuf"
+)
 ```
 
-### Complex Event Schema (`schemas/complex_event.avsc`)
+## Examples Directory Structure
 
-```json
-{
-  "type": "record",
-  "name": "ComplexEvent",
-  "namespace": "com.production.events",
-  "fields": [
-    {"name": "event_id", "type": "string"},
-    {"name": "timestamp", "type": "long"},
-    {"name": "event_type", "type": {"type": "enum", "name": "EventType", "symbols": ["USER_ACTION", "SYSTEM_EVENT", "ERROR_EVENT"]}},
-    {"name": "user_context", "type": [
-      "null",
-      {
-        "type": "record",
-        "name": "UserContext",
-        "fields": [
-          {"name": "user_id", "type": "string"},
-          {"name": "session_id", "type": ["null", "string"], "default": null}
-        ]
-      }
-    ], "default": null},
-    {"name": "event_data", "type": {"type": "map", "values": ["null", "string", "long", "double", "boolean"]}},
-    {"name": "metadata", "type": {
-      "type": "record",
-      "name": "EventMetadata",
-      "fields": [
-        {"name": "source_system", "type": "string"},
-        {"name": "schema_version", "type": "string", "default": "1.0.0"}
-      ]
-    }}
-  ]
-}
 ```
+examples/
+├── json_examples/              # JSON message examples
+│   ├── simple_json_test.py
+│   └── README.md
+├── avro_examples/              # Avro schema examples
+│   ├── simple_avro_test.py
+│   ├── production_schema_migration.py
+│   ├── schemas/
+│   └── README.md
+├── protobuf_examples/          # Protobuf examples
+│   ├── simple_protobuf_example.py
+│   ├── advanced_protobuf_example.py
+│   ├── schemas/
+│   │   ├── user.proto
+│   │   └── product.proto
+│   └── README.md
+├── performance_examples/       # Performance optimization
+├── production_examples/        # Enterprise deployment patterns
+└── docker-compose.yml         # Local testing setup
+```
+
+## Serialization Format Comparison
+
+| Feature | JSON | Avro | Protobuf |
+|---------|------|------|----------|
+| **Schema Evolution** | Basic | Advanced | Advanced |
+| **Performance** | Good | Better | Best |
+| **Schema Registry** | No | Yes | Yes |
+| **Backward Compatibility** | Manual | Automatic | Automatic |
+| **Binary Format** | No | Yes | Yes |
+| **Human Readable** | Yes | No | No |
+| **Cross-Language** | Yes | Yes | Yes |
+| **Use Case** | APIs, Logging | Analytics, ETL | High-perf, gRPC |
 
 ## Development & Testing
 
 ### Local Development Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/kingsley-123/dagster-kafka-integration.git
 cd dagster-kafka-integration
 
-# Install dependencies
+# Install dependencies (includes Protobuf support)
 pip install -r requirements.txt
 
 # Install in development mode
 pip install -e .
 ```
 
-### Testing with Docker
+### Comprehensive Testing
 
 ```bash
 # Start Kafka and Schema Registry
 docker-compose up -d
 
-# Run all tests (73 comprehensive tests)
+# Run all 81 tests across all formats
 python -m pytest tests/ -v
 
-# Run specific test modules
-python -m pytest tests/test_schema_evolution.py -v
-python -m pytest tests/test_monitoring.py -v
-python -m pytest tests/test_performance.py -v
+# Test specific serialization formats
+python -m pytest tests/test_avro_io_manager.py -v          # Avro tests
+python -m pytest tests/test_protobuf_io_manager.py -v      # Protobuf tests
+python -m pytest tests/test_schema_evolution.py -v        # Schema evolution
+python -m pytest tests/test_monitoring.py -v              # Monitoring
+python -m pytest tests/test_performance.py -v             # Performance
 ```
 
-### Running Production Examples
+### Running Examples
 
 ```bash
-# Run Avro examples
+# JSON examples
+python examples/json_examples/simple_json_test.py
+
+# Avro examples
 python examples/avro_examples/simple_avro_test.py
 python examples/avro_examples/production_schema_migration.py
 
-# Run performance examples
+# Protobuf examples
+python examples/protobuf_examples/simple_protobuf_example.py
+python examples/protobuf_examples/advanced_protobuf_example.py
+
+# Performance examples
 python examples/performance_examples/high_throughput_pipeline.py
 ```
 
-## Examples
-
-The `examples/` directory contains:
-
-- **JSON Examples**: Basic Kafka JSON message consumption
-- **Avro Examples**: Complete Avro pipeline with schema evolution
-- **Production Examples**: Enterprise deployment patterns
-- **Performance Examples**: High-throughput optimization examples
-- **Monitoring Examples**: Alerting and metrics collection
-- **Docker Setup**: Local Kafka cluster for testing
-
 ## Schema Registry Support
 
-Supports multiple Schema Registry providers:
+Supports multiple Schema Registry providers across Avro and Protobuf:
 
 - **Confluent Schema Registry** (most common)
 - **AWS Glue Schema Registry**  
@@ -350,7 +426,7 @@ Supports multiple Schema Registry providers:
 
 ## Error Handling and Recovery
 
-The integration includes comprehensive error handling:
+The integration includes comprehensive error handling for all serialization formats:
 
 - **Connection failures**: Graceful timeouts and retries
 - **Schema errors**: Clear error messages for missing/invalid schemas  
@@ -383,78 +459,93 @@ The integration includes comprehensive error handling:
 - **Threshold Management**: Configurable alert thresholds
 - **Historical Analysis**: Performance trends and optimization insights
 
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality  
-4. Ensure all tests pass
-5. Submit a pull request
-
 ## Roadmap
 
 ### Completed Features
-- Schema evolution validation - COMPLETED
-- Avro support - COMPLETED
-- Schema Registry integration - COMPLETED
-- Production monitoring and alerting - COMPLETED
-- High-performance optimization - COMPLETED
+
+- **JSON Support** - Complete native integration
+- **Avro Support** - Full Schema Registry + evolution validation
+- **Protobuf Support** - Complete Protocol Buffers integration
+- **Schema Evolution** - All compatibility levels across formats
+- **Production Monitoring** - Real-time alerting and metrics
+- **High-Performance Optimization** - Caching, batching, pooling
+- **Comprehensive Testing** - 81 tests across all features
 
 ### Upcoming Features
-- Multiple serialization formats (Protobuf, JSON Schema)
-- Advanced consumer configuration
-- Dead letter queue support
-- Confluent Connect integration
-- Kafka Streams integration
 
-### Potential Future Enhancements
+- **Enhanced Security** - SASL/SSL for production clusters
+- **Dead Letter Queues** - Advanced error handling
+- **PyPI Distribution** - Official package release
+- **Confluent Connect** - Native connector integration
+- **Kafka Streams** - Stream processing integration
 
-**Enhanced Documentation** - More examples and patterns  
-**Security Features** - SASL/SSL for production clusters  
-**PyPI Distribution** - Official package release  
-**Official Integration** - Potential inclusion in Dagster core  
-**Additional Formats** - Protobuf, MessagePack support  
+### Future Enhancements
 
-Roadmap driven by community feedback and real-world usage.
+- **Additional Formats** - JSON Schema, MessagePack
+- **Advanced Consumers** - Custom partition assignment
+- **Cloud Integrations** - AWS MSK, Confluent Cloud
+- **Official Dagster Integration** - Potential core inclusion
+
+## Why Choose This Integration
+
+### Complete Solution
+
+- **Only integration supporting all 3 major formats** (JSON, Avro, Protobuf)
+- **Enterprise-grade features** out of the box
+- **Production-ready** with comprehensive monitoring
+
+### Developer Experience
+
+- **Familiar Dagster patterns** - feels native to the platform
+- **Comprehensive examples** for all use cases
+- **Extensive documentation** and testing
+
+### Production Ready
+
+- **81 comprehensive tests** covering all scenarios
+- **Real-world deployment** patterns and examples
+- **Performance optimization** tools and monitoring
+
+### Community Driven
+
+- **Active development** based on user feedback
+- **Open source** with transparent roadmap
+- **Enterprise support** options available
 
 ## Contributing
 
-Contributions are welcome! This project aims to fill a genuine gap in the Dagster ecosystem.
+Contributions are welcome! This project aims to be the definitive Kafka integration for Dagster.
 
 Ways to contribute:
 
-**Report issues** - Found a bug? Let us know!  
-**Feature requests** - What would make this more useful?  
-**Documentation** - Help improve examples and guides  
-**Code contributions** - PRs welcome for any improvements  
+- **Report issues** - Found a bug? Let us know!  
+- **Feature requests** - What would make this more useful?  
+- **Documentation** - Help improve examples and guides  
+- **Code contributions** - PRs welcome for any improvements  
 
 ## License
 
 Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
-## Community
+## Community & Support
 
-- **GitHub Issues**: Report bugs and request features
-- **Discussions**: Share use cases and get help  
+- **GitHub Issues**: [Report bugs and request features](https://github.com/kingsley-123/dagster-kafka-integration/issues)
+- **GitHub Discussions**: [Share use cases and get help](https://github.com/kingsley-123/dagster-kafka-integration/discussions)
 - **Star the repo**: If this helped your project!
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/kingsley-123/dagster-kafka-integration/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kingsley-123/dagster-kafka-integration/discussions)
-- **Documentation**: See `examples/` directory for comprehensive usage examples
 
 ## Acknowledgments
 
-- **Dagster Community**: For the initial feature request and feedback
-- **Contributors**: Thanks to all who provided feedback and testing
-- **Enterprise Features**: Built in response to production deployment needs
-- **Community Requests**: Continued development driven by user feedback
+- **Dagster Community**: For the initial feature request and continued feedback
+- **Contributors**: Thanks to all who provided feedback, testing, and code contributions
+- **Enterprise Users**: Built in response to real production deployment needs
+- **Slack Community**: Special thanks for validation and feature suggestions
 
 ---
 
-**The first and most complete Kafka integration for Dagster - now with enterprise-grade production features.**
+## The Complete Enterprise Solution
 
-*Built by Kingsley Okonkwo - Solving real data engineering problems with open source.*
+**The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features.
+
+*Version 0.7.0 - Built by Kingsley Okonkwo*
+
+*Solving real data engineering problems with comprehensive open source solutions.*

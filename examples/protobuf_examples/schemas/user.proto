@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package examples;
+
+// User information message
+message User {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+  bool is_active = 5;
+  repeated string tags = 6;
+  
+  // Nested address information
+  Address address = 7;
+  
+  // Timestamps
+  int64 created_at = 8;
+  int64 updated_at = 9;
+}
+
+// Address information
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string postal_code = 4;
+  string country = 5;
+}
+
+// User event types
+enum EventType {
+  USER_CREATED = 0;
+  USER_UPDATED = 1;
+  USER_DELETED = 2;
+  USER_LOGIN = 3;
+  USER_LOGOUT = 4;
+}
+
+// User event message
+message UserEvent {
+  EventType event_type = 1;
+  User user = 2;
+  int64 timestamp = 3;
+  string source_system = 4;
+  map<string, string> metadata = 5;
+}
