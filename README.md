@@ -1,23 +1,24 @@
 ﻿# Dagster Kafka Integration
 
-The first and most comprehensive Kafka integration for Dagster with complete enterprise-grade features supporting all three major serialization formats.
+The first and most comprehensive Kafka integration for Dagster with complete enterprise-grade features supporting all three major serialization formats and production security.
 
 ## Complete Enterprise Solution
 
-**Version 0.7.0** - The definitive Kafka integration with full serialization support:
+**Version 0.8.0** - Enhanced Security Release with enterprise-grade production features:
 
 - **JSON Support**: Native JSON message consumption from Kafka topics
 - **Avro Support**: Full Avro message support with Schema Registry integration  
 - **Protobuf Support**: Complete Protocol Buffers integration with schema management
+- **Enterprise Security**: Complete SASL/SSL authentication and encryption support
 - **Schema Evolution**: Comprehensive validation with breaking change detection across all formats
 - **Production Monitoring**: Real-time alerting with Slack/Email integration
 - **High Performance**: Advanced caching, batching, and connection pooling
 - **Error Recovery**: Multiple recovery strategies for production resilience
 - **Enterprise Ready**: Complete observability and production-grade error handling
 
-**81 comprehensive tests passing** - Full test coverage across all serialization formats and enterprise features.
+**107 comprehensive tests passing** - Full test coverage across all serialization formats, security configurations, and enterprise features.
 
-## Three Serialization Formats Supported
+## Three Serialization Formats + Enterprise Security
 
 ### JSON Support
 Perfect for APIs and simple data structures.
@@ -27,6 +28,9 @@ Schema Registry integration with evolution validation.
 
 ### Protobuf Support
 High-performance binary serialization with comprehensive tooling.
+
+### Enterprise Security (New in v0.8.0)
+Complete SASL/SSL authentication and encryption for production deployments.
 
 ## Installation
 
@@ -54,6 +58,39 @@ defs = Definitions(
         "io_manager": KafkaIOManager(
             kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
             consumer_group_id="my-dagster-pipeline"
+        )
+    }
+)
+```
+
+### Secure Production Usage (New in v0.8.0)
+
+```python
+from dagster import asset, Definitions
+from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager
+
+# Production-grade secure configuration
+secure_kafka = KafkaResource(
+    bootstrap_servers="prod-kafka-01:9092,prod-kafka-02:9092",
+    security_protocol=SecurityProtocol.SASL_SSL,
+    sasl_mechanism=SaslMechanism.SCRAM_SHA_256,
+    sasl_username="production-user",
+    sasl_password="secure-password",
+    ssl_ca_location="/etc/ssl/certs/kafka-ca.pem",
+    ssl_check_hostname=True
+)
+
+@asset
+def secure_events():
+    """Consume messages from secure production Kafka cluster."""
+    pass
+
+defs = Definitions(
+    assets=[secure_events],
+    resources={
+        "io_manager": KafkaIOManager(
+            kafka_resource=secure_kafka,
+            consumer_group_id="secure-production-pipeline"
         )
     }
 )
@@ -112,41 +149,93 @@ defs = Definitions(
 )
 ```
 
-### Advanced Protobuf with Schema Registry
+## Enterprise Security Features (v0.8.0)
+
+### Security Protocols Supported
+
+- **PLAINTEXT**: For local development and testing
+- **SSL**: Certificate-based encryption 
+- **SASL_PLAINTEXT**: Username/password authentication
+- **SASL_SSL**: Combined authentication and encryption (recommended for production)
+
+### SASL Authentication Mechanisms
+
+- **PLAIN**: Simple username/password authentication
+- **SCRAM-SHA-256**: Secure challenge-response authentication
+- **SCRAM-SHA-512**: Enhanced secure authentication  
+- **GSSAPI**: Kerberos authentication for enterprise environments
+- **OAUTHBEARER**: OAuth-based authentication
+
+### Production Security Configuration
 
 ```python
-from dagster_kafka.protobuf_io_manager import ProtobufKafkaIOManager
+from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism
 
-protobuf_manager = ProtobufKafkaIOManager(
-    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
-    schema_registry_url="http://localhost:8081",
-    enable_schema_validation=True,
-    compatibility_level="BACKWARD",
-    consumer_group_id="enterprise-protobuf-consumer"
+# SASL/SSL Production Configuration (Most Secure)
+production_kafka = KafkaResource(
+    bootstrap_servers="prod-kafka:9092",
+    security_protocol=SecurityProtocol.SASL_SSL,
+    sasl_mechanism=SaslMechanism.SCRAM_SHA_256,
+    sasl_username="dagster-prod-user", 
+    sasl_password="secure-production-password",
+    ssl_ca_location="/etc/ssl/certs/kafka-ca.pem",
+    ssl_check_hostname=True,
+    session_timeout_ms=30000,
+    additional_config={
+        "request.timeout.ms": 30000,
+        "retry.backoff.ms": 1000
+    }
 )
+
+# SSL-Only Configuration  
+ssl_kafka = KafkaResource(
+    bootstrap_servers="ssl-kafka:9092",
+    security_protocol=SecurityProtocol.SSL,
+    ssl_ca_location="/etc/ssl/certs/ca.pem",
+    ssl_certificate_location="/etc/ssl/certs/client.pem",
+    ssl_key_location="/etc/ssl/private/client-key.pem",
+    ssl_key_password="client-key-password"
+)
+
+# Validate security configuration
+production_kafka.validate_security_config()
+
+# Get producer configuration with same security settings
+producer_config = production_kafka.get_producer_config()
 ```
 
-## All Three Formats in One Pipeline
+## All Three Formats with Security
 
 ```python
 from dagster import Definitions
-from dagster_kafka import KafkaResource, KafkaIOManager, avro_kafka_io_manager
+from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager, avro_kafka_io_manager
 from dagster_kafka.protobuf_io_manager import create_protobuf_kafka_io_manager
+
+# Secure Kafka resource for all formats
+secure_kafka = KafkaResource(
+    bootstrap_servers="secure-kafka:9092",
+    security_protocol=SecurityProtocol.SASL_SSL,
+    sasl_mechanism=SaslMechanism.SCRAM_SHA_256,
+    sasl_username="enterprise-user",
+    sasl_password="enterprise-password",
+    ssl_ca_location="/etc/ssl/kafka-ca.pem"
+)
 
 defs = Definitions(
     assets=[json_events, avro_events, protobuf_events, unified_processing],
     resources={
         "json_io_manager": KafkaIOManager(
-            kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
-            consumer_group_id="json-consumer"
+            kafka_resource=secure_kafka,
+            consumer_group_id="secure-json-consumer"
         ),
         "avro_io_manager": avro_kafka_io_manager.configured({
-            "schema_registry_url": "http://localhost:8081",
+            "kafka_resource": secure_kafka,
+            "schema_registry_url": "https://secure-schema-registry:8081",
             "enable_schema_validation": True
         }),
         "protobuf_io_manager": create_protobuf_kafka_io_manager(
-            kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
-            schema_registry_url="http://localhost:8081"
+            kafka_resource=secure_kafka,
+            schema_registry_url="https://secure-schema-registry:8081"
         )
     }
 )
@@ -287,11 +376,30 @@ optimizer = PerformanceOptimizer(
 
 ## Configuration Options
 
-### KafkaResource
+### KafkaResource with Security
 
 ```python
 KafkaResource(
+    # Core Configuration
     bootstrap_servers="localhost:9092",  # Required: Kafka cluster endpoints
+    
+    # Security Configuration
+    security_protocol=SecurityProtocol.SASL_SSL,  # Security protocol
+    sasl_mechanism=SaslMechanism.SCRAM_SHA_256,   # SASL mechanism
+    sasl_username="username",                      # SASL username
+    sasl_password="password",                      # SASL password
+    
+    # SSL Configuration
+    ssl_ca_location="/path/to/ca.pem",            # CA certificate
+    ssl_certificate_location="/path/to/cert.pem", # Client certificate
+    ssl_key_location="/path/to/key.pem",          # Private key
+    ssl_key_password="key-password",               # Key password
+    ssl_check_hostname=True,                       # Hostname verification
+    
+    # Advanced Configuration
+    session_timeout_ms=30000,                     # Session timeout
+    auto_offset_reset="earliest",                 # Offset reset policy
+    additional_config={"request.timeout.ms": 30000}  # Additional config
 )
 ```
 
@@ -299,7 +407,8 @@ KafkaResource(
 
 ```python
 avro_kafka_io_manager.configured({
-    "schema_registry_url": "http://localhost:8081",
+    "kafka_resource": secure_kafka_resource,      # Secure Kafka resource
+    "schema_registry_url": "https://registry:8081", # Secure schema registry
     "enable_schema_validation": True,
     "compatibility_level": "BACKWARD",
     "enable_caching": True,
@@ -312,16 +421,16 @@ avro_kafka_io_manager.configured({
 ### Protobuf Configuration Options
 
 ```python
-# Simple Protobuf usage
+# Simple Protobuf usage with security
 simple_manager = create_protobuf_kafka_io_manager(
-    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
+    kafka_resource=secure_kafka_resource,
     consumer_group_id="my-protobuf-consumer"
 )
 
-# Advanced Protobuf with Schema Registry
+# Advanced Protobuf with Schema Registry and security
 advanced_manager = ProtobufKafkaIOManager(
-    kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
-    schema_registry_url="http://localhost:8081",
+    kafka_resource=secure_kafka_resource,
+    schema_registry_url="https://secure-registry:8081",
     enable_schema_validation=True,
     compatibility_level="BACKWARD",
     consumer_group_id="enterprise-protobuf"
@@ -347,23 +456,27 @@ examples/
 │   │   ├── user.proto
 │   │   └── product.proto
 │   └── README.md
+├── security_examples/          # NEW: Enterprise security examples
+│   ├── production_security_example.py
+│   └── README.md
 ├── performance_examples/       # Performance optimization
 ├── production_examples/        # Enterprise deployment patterns
 └── docker-compose.yml         # Local testing setup
 ```
 
-## Serialization Format Comparison
+## Security and Serialization Format Comparison
 
-| Feature | JSON | Avro | Protobuf |
-|---------|------|------|----------|
-| **Schema Evolution** | Basic | Advanced | Advanced |
-| **Performance** | Good | Better | Best |
-| **Schema Registry** | No | Yes | Yes |
-| **Backward Compatibility** | Manual | Automatic | Automatic |
-| **Binary Format** | No | Yes | Yes |
-| **Human Readable** | Yes | No | No |
-| **Cross-Language** | Yes | Yes | Yes |
-| **Use Case** | APIs, Logging | Analytics, ETL | High-perf, gRPC |
+| Feature | JSON | Avro | Protobuf | Security |
+|---------|------|------|----------|----------|
+| **Schema Evolution** | Basic | Advanced | Advanced | N/A |
+| **Performance** | Good | Better | Best | Overhead |
+| **Schema Registry** | No | Yes | Yes | HTTPS |
+| **Backward Compatibility** | Manual | Automatic | Automatic | Maintained |
+| **Binary Format** | No | Yes | Yes | Encrypted |
+| **Human Readable** | Yes | No | No | No |
+| **Cross-Language** | Yes | Yes | Yes | Yes |
+| **Authentication** | Basic | SASL/SSL | SASL/SSL | Full |
+| **Use Case** | APIs, Logging | Analytics, ETL | High-perf, gRPC | All Production |
 
 ## Development & Testing
 
@@ -373,7 +486,7 @@ examples/
 git clone https://github.com/kingsley-123/dagster-kafka-integration.git
 cd dagster-kafka-integration
 
-# Install dependencies (includes Protobuf support)
+# Install dependencies (includes Protobuf and security support)
 pip install -r requirements.txt
 
 # Install in development mode
@@ -386,15 +499,16 @@ pip install -e .
 # Start Kafka and Schema Registry
 docker-compose up -d
 
-# Run all 81 tests across all formats
+# Run all 107 tests across all formats and security configurations
 python -m pytest tests/ -v
 
-# Test specific serialization formats
-python -m pytest tests/test_avro_io_manager.py -v          # Avro tests
-python -m pytest tests/test_protobuf_io_manager.py -v      # Protobuf tests
-python -m pytest tests/test_schema_evolution.py -v        # Schema evolution
-python -m pytest tests/test_monitoring.py -v              # Monitoring
-python -m pytest tests/test_performance.py -v             # Performance
+# Test specific modules
+python -m pytest tests/test_avro_io_manager.py -v      # Avro tests
+python -m pytest tests/test_protobuf_io_manager.py -v  # Protobuf tests
+python -m pytest tests/test_security.py -v            # Security tests
+python -m pytest tests/test_schema_evolution.py -v    # Schema evolution
+python -m pytest tests/test_monitoring.py -v          # Monitoring
+python -m pytest tests/test_performance.py -v         # Performance
 ```
 
 ### Running Examples
@@ -411,29 +525,33 @@ python examples/avro_examples/production_schema_migration.py
 python examples/protobuf_examples/simple_protobuf_example.py
 python examples/protobuf_examples/advanced_protobuf_example.py
 
+# Security examples (NEW)
+python examples/security_examples/production_security_example.py
+
 # Performance examples
 python examples/performance_examples/high_throughput_pipeline.py
 ```
 
 ## Schema Registry Support
 
-Supports multiple Schema Registry providers across Avro and Protobuf:
+Supports multiple Schema Registry providers across Avro and Protobuf with security:
 
-- **Confluent Schema Registry** (most common)
-- **AWS Glue Schema Registry**  
-- **Azure Schema Registry**
-- **Custom implementations**
+- **Confluent Schema Registry** (most common) - HTTP/HTTPS
+- **AWS Glue Schema Registry** - IAM authentication
+- **Azure Schema Registry** - Azure AD authentication
+- **Custom implementations** - Flexible authentication
 
 ## Error Handling and Recovery
 
-The integration includes comprehensive error handling for all serialization formats:
+The integration includes comprehensive error handling for all serialization formats and security configurations:
 
-- **Connection failures**: Graceful timeouts and retries
+- **Connection failures**: Graceful timeouts and retries with security context
+- **Authentication failures**: Clear error messages for SASL/SSL issues
 - **Schema errors**: Clear error messages for missing/invalid schemas  
 - **Deserialization errors**: Skip malformed messages with logging
 - **Schema evolution failures**: Multiple recovery strategies
 - **Performance degradation**: Automatic optimization recommendations
-- **Authentication**: Support for SASL, SSL, and other auth methods
+- **Security validation**: Comprehensive configuration validation
 
 ## Production Features
 
@@ -444,46 +562,57 @@ The integration includes comprehensive error handling for all serialization form
 - **Skip Validation**: Continue processing with validation disabled
 - **Graceful Degradation**: Accept minor breaking changes
 - **Retry with Backoff**: Exponential backoff retry logic
+- **Security Retry**: Automatic credential refresh and retry
 
 ### Performance Optimization
 
 - **High-Performance Caching**: LRU, TTL, and write-through strategies
 - **Adaptive Batching**: Dynamic batch size optimization
-- **Connection Pooling**: Efficient resource management
+- **Connection Pooling**: Efficient resource management with security context
 - **Metrics Collection**: Comprehensive performance monitoring
 
 ### Monitoring and Alerting
 
 - **Real-time Metrics**: Validation attempts, cache hit rates, throughput
+- **Security Metrics**: Authentication success/failure rates
 - **Alert Integration**: Slack, email, and custom webhooks
 - **Threshold Management**: Configurable alert thresholds
 - **Historical Analysis**: Performance trends and optimization insights
 
+### Security Features
+
+- **Authentication**: SASL mechanisms (PLAIN, SCRAM, GSSAPI, OAUTHBEARER)
+- **Encryption**: SSL/TLS with certificate management
+- **Authorization**: Kafka ACL support through security protocols
+- **Validation**: Comprehensive security configuration validation
+- **Monitoring**: Security-aware logging and metrics
+
 ## Roadmap
 
-### Completed Features
+### Completed Features (v0.8.0)
 
 - **JSON Support** - Complete native integration
 - **Avro Support** - Full Schema Registry + evolution validation
 - **Protobuf Support** - Complete Protocol Buffers integration
+- **Enterprise Security** - Complete SASL/SSL authentication and encryption
 - **Schema Evolution** - All compatibility levels across formats
 - **Production Monitoring** - Real-time alerting and metrics
 - **High-Performance Optimization** - Caching, batching, pooling
-- **Comprehensive Testing** - 81 tests across all features
+- **Comprehensive Testing** - 107 tests across all features
 
 ### Upcoming Features
 
-- **Enhanced Security** - SASL/SSL for production clusters
 - **Dead Letter Queues** - Advanced error handling
 - **PyPI Distribution** - Official package release
+- **JSON Schema Support** - 4th serialization format
 - **Confluent Connect** - Native connector integration
 - **Kafka Streams** - Stream processing integration
 
 ### Future Enhancements
 
-- **Additional Formats** - JSON Schema, MessagePack
+- **Additional Formats** - MessagePack, Apache Arrow
 - **Advanced Consumers** - Custom partition assignment
-- **Cloud Integrations** - AWS MSK, Confluent Cloud
+- **Cloud Integrations** - AWS MSK, Confluent Cloud native support
 - **Official Dagster Integration** - Potential core inclusion
 
 ## Why Choose This Integration
@@ -491,20 +620,21 @@ The integration includes comprehensive error handling for all serialization form
 ### Complete Solution
 
 - **Only integration supporting all 3 major formats** (JSON, Avro, Protobuf)
-- **Enterprise-grade features** out of the box
+- **Enterprise-grade security** with SASL/SSL support
 - **Production-ready** with comprehensive monitoring
 
 ### Developer Experience
 
 - **Familiar Dagster patterns** - feels native to the platform
-- **Comprehensive examples** for all use cases
+- **Comprehensive examples** for all use cases including security
 - **Extensive documentation** and testing
 
 ### Production Ready
 
-- **81 comprehensive tests** covering all scenarios
+- **107 comprehensive tests** covering all scenarios including security
 - **Real-world deployment** patterns and examples
 - **Performance optimization** tools and monitoring
+- **Enterprise security** for production Kafka clusters
 
 ### Community Driven
 
@@ -522,6 +652,7 @@ Ways to contribute:
 - **Feature requests** - What would make this more useful?  
 - **Documentation** - Help improve examples and guides  
 - **Code contributions** - PRs welcome for any improvements  
+- **Security testing** - Help test security configurations
 
 ## License
 
@@ -538,14 +669,15 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 - **Dagster Community**: For the initial feature request and continued feedback
 - **Contributors**: Thanks to all who provided feedback, testing, and code contributions
 - **Enterprise Users**: Built in response to real production deployment needs
+- **Security Community**: Special thanks for security testing and validation
 - **Slack Community**: Special thanks for validation and feature suggestions
 
 ---
 
 ## The Complete Enterprise Solution
 
-**The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features.
+**The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features and complete security.
 
-*Version 0.7.0 - Built by Kingsley Okonkwo*
+*Version 0.8.0 - Enhanced Security Release - Built by Kingsley Okonkwo*
 
 *Solving real data engineering problems with comprehensive open source solutions.*
