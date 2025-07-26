@@ -12,6 +12,7 @@ Provides Kafka integration for Dagster data pipelines with support for:
 """
 
 from .resources import KafkaResource
+from .resources import SecurityProtocol, SaslMechanism
 from .io_manager import KafkaIOManager
 from .avro_io_manager import AvroKafkaIOManager, avro_kafka_io_manager
 from .protobuf_io_manager import ProtobufKafkaIOManager, protobuf_kafka_io_manager, ProtobufSchemaManager
@@ -41,7 +42,7 @@ from .performance import (
     PerformanceMetrics
 )
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 __all__ = [
     "KafkaResource",
