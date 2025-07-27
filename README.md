@@ -4,11 +4,12 @@ The first and most comprehensive Kafka integration for Dagster with complete ent
 
 ## Complete Enterprise Solution
 
-**Version 0.8.0** - Enhanced Security Release with enterprise-grade production features:
+**Version 0.9.0** - Dead Letter Queue Release with enterprise-grade error handling:
 
 - **JSON Support**: Native JSON message consumption from Kafka topics
 - **Avro Support**: Full Avro message support with Schema Registry integration  
 - **Protobuf Support**: Complete Protocol Buffers integration with schema management
+- **Dead Letter Queue (DLQ)**: Enterprise-grade error handling with circuit breaker patterns
 - **Enterprise Security**: Complete SASL/SSL authentication and encryption support
 - **Schema Evolution**: Comprehensive validation with breaking change detection across all formats
 - **Production Monitoring**: Real-time alerting with Slack/Email integration
@@ -16,20 +17,23 @@ The first and most comprehensive Kafka integration for Dagster with complete ent
 - **Error Recovery**: Multiple recovery strategies for production resilience
 - **Enterprise Ready**: Complete observability and production-grade error handling
 
-**107 comprehensive tests passing** - Full test coverage across all serialization formats, security configurations, and enterprise features.
+**133 comprehensive tests passing** - Full test coverage across all serialization formats, security configurations, enterprise features, and DLQ functionality.
 
-## Three Serialization Formats + Enterprise Security
+## Three Serialization Formats + Enterprise Security + DLQ
 
 ### JSON Support
-Perfect for APIs and simple data structures.
+Perfect for APIs and simple data structures with DLQ error handling.
 
 ### Avro Support 
-Schema Registry integration with evolution validation.
+Schema Registry integration with evolution validation and DLQ support.
 
 ### Protobuf Support
-High-performance binary serialization with comprehensive tooling.
+High-performance binary serialization with comprehensive tooling and DLQ handling.
 
-### Enterprise Security (New in v0.8.0)
+### Dead Letter Queue (DLQ) - New in v0.9.0
+Enterprise-grade error handling with automatic routing of failed messages to dead letter topics for debugging and reprocessing.
+
+### Enterprise Security
 Complete SASL/SSL authentication and encryption for production deployments.
 
 ## Installation
@@ -40,15 +44,15 @@ pip install git+https://github.com/kingsley-123/dagster-kafka-integration.git
 
 ## Quick Start
 
-### JSON Usage
+### JSON Usage with DLQ
 
 ```python
 from dagster import asset, Definitions
-from dagster_kafka import KafkaResource, KafkaIOManager
+from dagster_kafka import KafkaResource, KafkaIOManager, DLQStrategy
 
 @asset
 def api_events():
-    """Consume JSON messages from Kafka topic."""
+    """Consume JSON messages from Kafka topic with DLQ support."""
     pass
 
 defs = Definitions(
@@ -57,19 +61,22 @@ defs = Definitions(
         "kafka": KafkaResource(bootstrap_servers="localhost:9092"),
         "io_manager": KafkaIOManager(
             kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
-            consumer_group_id="my-dagster-pipeline"
+            consumer_group_id="my-dagster-pipeline",
+            enable_dlq=True,
+            dlq_strategy=DLQStrategy.RETRY_THEN_DLQ,
+            dlq_max_retries=3
         )
     }
 )
 ```
 
-### Secure Production Usage (New in v0.8.0)
+### Secure Production Usage with DLQ
 
 ```python
 from dagster import asset, Definitions
-from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager
+from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager, DLQStrategy
 
-# Production-grade secure configuration
+# Production-grade secure configuration with DLQ
 secure_kafka = KafkaResource(
     bootstrap_servers="prod-kafka-01:9092,prod-kafka-02:9092",
     security_protocol=SecurityProtocol.SASL_SSL,
@@ -82,7 +89,7 @@ secure_kafka = KafkaResource(
 
 @asset
 def secure_events():
-    """Consume messages from secure production Kafka cluster."""
+    """Consume messages from secure production Kafka cluster with DLQ."""
     pass
 
 defs = Definitions(
@@ -90,17 +97,20 @@ defs = Definitions(
     resources={
         "io_manager": KafkaIOManager(
             kafka_resource=secure_kafka,
-            consumer_group_id="secure-production-pipeline"
+            consumer_group_id="secure-production-pipeline",
+            enable_dlq=True,
+            dlq_strategy=DLQStrategy.CIRCUIT_BREAKER,
+            dlq_circuit_breaker_failure_threshold=5
         )
     }
 )
 ```
 
-### Avro Usage with Schema Registry
+### Avro Usage with Schema Registry and DLQ
 
 ```python
 from dagster import asset, Config
-from dagster_kafka import KafkaResource, avro_kafka_io_manager
+from dagster_kafka import KafkaResource, avro_kafka_io_manager, DLQStrategy
 
 class UserEventsConfig(Config):
     schema_file: str = "schemas/user.avsc"
@@ -108,7 +118,7 @@ class UserEventsConfig(Config):
 
 @asset(io_manager_key="avro_kafka_io_manager")
 def user_data(context, config: UserEventsConfig):
-    """Load user events using Avro schema with validation."""
+    """Load user events using Avro schema with validation and DLQ."""
     io_manager = context.resources.avro_kafka_io_manager
     return io_manager.load_input(
         context,
@@ -119,16 +129,16 @@ def user_data(context, config: UserEventsConfig):
     )
 ```
 
-### Protobuf Usage
+### Protobuf Usage with DLQ
 
 ```python
 from dagster import asset, Definitions
-from dagster_kafka import KafkaResource
+from dagster_kafka import KafkaResource, DLQStrategy
 from dagster_kafka.protobuf_io_manager import create_protobuf_kafka_io_manager
 
 @asset(io_manager_key="protobuf_kafka_io_manager")
 def user_events():
-    """Consume Protobuf messages from Kafka topic."""
+    """Consume Protobuf messages from Kafka topic with DLQ support."""
     pass
 
 @asset
@@ -143,10 +153,72 @@ defs = Definitions(
         "protobuf_kafka_io_manager": create_protobuf_kafka_io_manager(
             kafka_resource=KafkaResource(bootstrap_servers="localhost:9092"),
             schema_registry_url="http://localhost:8081",  # Optional
-            consumer_group_id="dagster-protobuf-pipeline"
+            consumer_group_id="dagster-protobuf-pipeline",
+            enable_dlq=True,
+            dlq_strategy=DLQStrategy.RETRY_THEN_DLQ,
+            dlq_max_retries=3
         )
     }
 )
+```
+
+## Dead Letter Queue (DLQ) Features (v0.9.0)
+
+### DLQ Strategies
+
+- **DISABLED**: No DLQ processing
+- **IMMEDIATE**: Send to DLQ immediately on failure  
+- **RETRY_THEN_DLQ**: Retry N times, then send to DLQ
+- **CIRCUIT_BREAKER**: Circuit breaker pattern with DLQ fallback
+
+### Error Classification
+
+- **DESERIALIZATION_ERROR**: Failed to deserialize message
+- **SCHEMA_ERROR**: Schema validation failed
+- **PROCESSING_ERROR**: Business logic error
+- **CONNECTION_ERROR**: Kafka connection issues
+- **TIMEOUT_ERROR**: Message processing timeout
+- **UNKNOWN_ERROR**: Unclassified errors
+
+### Circuit Breaker Pattern
+
+```python
+from dagster_kafka import DLQConfiguration, DLQStrategy
+
+dlq_config = DLQConfiguration(
+    strategy=DLQStrategy.CIRCUIT_BREAKER,
+    circuit_breaker_failure_threshold=5,      # Open after 5 failures
+    circuit_breaker_recovery_timeout_ms=30000, # Test recovery after 30s
+    circuit_breaker_success_threshold=2        # Close after 2 successes
+)
+```
+
+### DLQ Message Enrichment
+
+DLQ messages include rich metadata for debugging:
+
+```json
+{
+  "original_message": {
+    "topic": "user-events",
+    "partition": 0,
+    "offset": 12345,
+    "key": "user-123",
+    "timestamp": 1640995200000
+  },
+  "error_info": {
+    "type": "deserialization_error",
+    "message": "JSON decode error",
+    "traceback": "Full Python traceback...",
+    "failure_timestamp": "2025-01-15T10:30:00Z",
+    "retry_count": 3
+  },
+  "processing_metadata": {
+    "consumer_group_id": "my-pipeline",
+    "dagster_run_id": "12345-67890",
+    "dagster_asset_key": "user_events"
+  }
+}
 ```
 
 ## Enterprise Security Features (v0.8.0)
@@ -204,11 +276,11 @@ production_kafka.validate_security_config()
 producer_config = production_kafka.get_producer_config()
 ```
 
-## All Three Formats with Security
+## All Three Formats with Security and DLQ
 
 ```python
 from dagster import Definitions
-from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager, avro_kafka_io_manager
+from dagster_kafka import KafkaResource, SecurityProtocol, SaslMechanism, KafkaIOManager, avro_kafka_io_manager, DLQStrategy
 from dagster_kafka.protobuf_io_manager import create_protobuf_kafka_io_manager
 
 # Secure Kafka resource for all formats
@@ -226,16 +298,22 @@ defs = Definitions(
     resources={
         "json_io_manager": KafkaIOManager(
             kafka_resource=secure_kafka,
-            consumer_group_id="secure-json-consumer"
+            consumer_group_id="secure-json-consumer",
+            enable_dlq=True,
+            dlq_strategy=DLQStrategy.CIRCUIT_BREAKER
         ),
         "avro_io_manager": avro_kafka_io_manager.configured({
             "kafka_resource": secure_kafka,
             "schema_registry_url": "https://secure-schema-registry:8081",
-            "enable_schema_validation": True
+            "enable_schema_validation": True,
+            "enable_dlq": True,
+            "dlq_strategy": "retry_then_dlq"
         }),
         "protobuf_io_manager": create_protobuf_kafka_io_manager(
             kafka_resource=secure_kafka,
-            schema_registry_url="https://secure-schema-registry:8081"
+            schema_registry_url="https://secure-schema-registry:8081",
+            enable_dlq=True,
+            dlq_strategy=DLQStrategy.RETRY_THEN_DLQ
         )
     }
 )
@@ -403,7 +481,7 @@ KafkaResource(
 )
 ```
 
-### Advanced AvroKafkaIOManager Configuration
+### Advanced AvroKafkaIOManager Configuration with DLQ
 
 ```python
 avro_kafka_io_manager.configured({
@@ -414,26 +492,37 @@ avro_kafka_io_manager.configured({
     "enable_caching": True,
     "cache_ttl": 300,
     "max_retries": 3,
-    "retry_backoff": 1.0
+    "retry_backoff": 1.0,
+    # DLQ Configuration
+    "enable_dlq": True,
+    "dlq_strategy": "circuit_breaker",
+    "dlq_max_retries": 3,
+    "dlq_circuit_breaker_failure_threshold": 5
 })
 ```
 
-### Protobuf Configuration Options
+### Protobuf Configuration Options with DLQ
 
 ```python
-# Simple Protobuf usage with security
+# Simple Protobuf usage with security and DLQ
 simple_manager = create_protobuf_kafka_io_manager(
     kafka_resource=secure_kafka_resource,
-    consumer_group_id="my-protobuf-consumer"
+    consumer_group_id="my-protobuf-consumer",
+    enable_dlq=True,
+    dlq_strategy=DLQStrategy.RETRY_THEN_DLQ,
+    dlq_max_retries=3
 )
 
-# Advanced Protobuf with Schema Registry and security
+# Advanced Protobuf with Schema Registry, security, and DLQ
 advanced_manager = ProtobufKafkaIOManager(
     kafka_resource=secure_kafka_resource,
     schema_registry_url="https://secure-registry:8081",
     enable_schema_validation=True,
     compatibility_level="BACKWARD",
-    consumer_group_id="enterprise-protobuf"
+    consumer_group_id="enterprise-protobuf",
+    enable_dlq=True,
+    dlq_strategy=DLQStrategy.CIRCUIT_BREAKER,
+    dlq_circuit_breaker_failure_threshold=5
 )
 ```
 
@@ -456,7 +545,11 @@ examples/
 │   │   ├── user.proto
 │   │   └── product.proto
 │   └── README.md
-├── security_examples/          # NEW: Enterprise security examples
+├── dlq_examples/               # NEW: Dead Letter Queue examples
+│   ├── dlq_circuit_breaker_example.py
+│   ├── dlq_retry_strategies.py
+│   └── README.md
+├── security_examples/          # Enterprise security examples
 │   ├── production_security_example.py
 │   └── README.md
 ├── performance_examples/       # Performance optimization
@@ -464,19 +557,20 @@ examples/
 └── docker-compose.yml         # Local testing setup
 ```
 
-## Security and Serialization Format Comparison
+## Security, Serialization Format, and DLQ Comparison
 
-| Feature | JSON | Avro | Protobuf | Security |
-|---------|------|------|----------|----------|
-| **Schema Evolution** | Basic | Advanced | Advanced | N/A |
-| **Performance** | Good | Better | Best | Overhead |
-| **Schema Registry** | No | Yes | Yes | HTTPS |
-| **Backward Compatibility** | Manual | Automatic | Automatic | Maintained |
-| **Binary Format** | No | Yes | Yes | Encrypted |
-| **Human Readable** | Yes | No | No | No |
-| **Cross-Language** | Yes | Yes | Yes | Yes |
-| **Authentication** | Basic | SASL/SSL | SASL/SSL | Full |
-| **Use Case** | APIs, Logging | Analytics, ETL | High-perf, gRPC | All Production |
+| Feature | JSON | Avro | Protobuf | Security | DLQ |
+|---------|------|------|----------|----------|-----|
+| **Schema Evolution** | Basic | Advanced | Advanced | N/A | Error Routing |
+| **Performance** | Good | Better | Best | Overhead | Minimal |
+| **Schema Registry** | No | Yes | Yes | HTTPS | Topic-based |
+| **Backward Compatibility** | Manual | Automatic | Automatic | Maintained | Preserved |
+| **Binary Format** | No | Yes | Yes | Encrypted | JSON |
+| **Human Readable** | Yes | No | No | No | Yes |
+| **Cross-Language** | Yes | Yes | Yes | Yes | Yes |
+| **Authentication** | Basic | SASL/SSL | SASL/SSL | Full | Secured |
+| **Error Handling** | DLQ | DLQ | DLQ | Monitored | Core Feature |
+| **Use Case** | APIs, Logging | Analytics, ETL | High-perf, gRPC | All Production | Error Recovery |
 
 ## Development & Testing
 
@@ -486,7 +580,7 @@ examples/
 git clone https://github.com/kingsley-123/dagster-kafka-integration.git
 cd dagster-kafka-integration
 
-# Install dependencies (includes Protobuf and security support)
+# Install dependencies (includes Protobuf, security, and DLQ support)
 pip install -r requirements.txt
 
 # Install in development mode
@@ -499,12 +593,13 @@ pip install -e .
 # Start Kafka and Schema Registry
 docker-compose up -d
 
-# Run all 107 tests across all formats and security configurations
+# Run all 133 tests across all formats, security configurations, and DLQ functionality
 python -m pytest tests/ -v
 
 # Test specific modules
 python -m pytest tests/test_avro_io_manager.py -v      # Avro tests
 python -m pytest tests/test_protobuf_io_manager.py -v  # Protobuf tests
+python -m pytest tests/test_dlq.py -v                 # DLQ tests (NEW)
 python -m pytest tests/test_security.py -v            # Security tests
 python -m pytest tests/test_schema_evolution.py -v    # Schema evolution
 python -m pytest tests/test_monitoring.py -v          # Monitoring
@@ -525,7 +620,11 @@ python examples/avro_examples/production_schema_migration.py
 python examples/protobuf_examples/simple_protobuf_example.py
 python examples/protobuf_examples/advanced_protobuf_example.py
 
-# Security examples (NEW)
+# DLQ examples (NEW)
+python examples/dlq_examples/dlq_circuit_breaker_example.py
+python examples/dlq_examples/dlq_retry_strategies.py
+
+# Security examples
 python examples/security_examples/production_security_example.py
 
 # Performance examples
@@ -543,15 +642,16 @@ Supports multiple Schema Registry providers across Avro and Protobuf with securi
 
 ## Error Handling and Recovery
 
-The integration includes comprehensive error handling for all serialization formats and security configurations:
+The integration includes comprehensive error handling for all serialization formats, security configurations, and DLQ functionality:
 
 - **Connection failures**: Graceful timeouts and retries with security context
 - **Authentication failures**: Clear error messages for SASL/SSL issues
 - **Schema errors**: Clear error messages for missing/invalid schemas  
-- **Deserialization errors**: Skip malformed messages with logging
-- **Schema evolution failures**: Multiple recovery strategies
+- **Deserialization errors**: Automatic DLQ routing with retry logic
+- **Schema evolution failures**: Multiple recovery strategies with DLQ fallback
 - **Performance degradation**: Automatic optimization recommendations
 - **Security validation**: Comprehensive configuration validation
+- **Circuit breaker protection**: Automatic failure detection and recovery
 
 ## Production Features
 
@@ -563,6 +663,7 @@ The integration includes comprehensive error handling for all serialization form
 - **Graceful Degradation**: Accept minor breaking changes
 - **Retry with Backoff**: Exponential backoff retry logic
 - **Security Retry**: Automatic credential refresh and retry
+- **Dead Letter Queue**: Automatic routing of failed messages (NEW)
 
 ### Performance Optimization
 
@@ -570,11 +671,13 @@ The integration includes comprehensive error handling for all serialization form
 - **Adaptive Batching**: Dynamic batch size optimization
 - **Connection Pooling**: Efficient resource management with security context
 - **Metrics Collection**: Comprehensive performance monitoring
+- **DLQ Optimization**: Minimal overhead error handling (NEW)
 
 ### Monitoring and Alerting
 
 - **Real-time Metrics**: Validation attempts, cache hit rates, throughput
 - **Security Metrics**: Authentication success/failure rates
+- **DLQ Metrics**: Error rates, retry counts, circuit breaker states (NEW)
 - **Alert Integration**: Slack, email, and custom webhooks
 - **Threshold Management**: Configurable alert thresholds
 - **Historical Analysis**: Performance trends and optimization insights
@@ -586,10 +689,11 @@ The integration includes comprehensive error handling for all serialization form
 - **Authorization**: Kafka ACL support through security protocols
 - **Validation**: Comprehensive security configuration validation
 - **Monitoring**: Security-aware logging and metrics
+- **DLQ Security**: Secure DLQ topic access and encryption (NEW)
 
 ## Roadmap
 
-### Completed Features (v0.8.0)
+### Completed Features (v0.9.0)
 
 - **JSON Support** - Complete native integration
 - **Avro Support** - Full Schema Registry + evolution validation
@@ -598,11 +702,11 @@ The integration includes comprehensive error handling for all serialization form
 - **Schema Evolution** - All compatibility levels across formats
 - **Production Monitoring** - Real-time alerting and metrics
 - **High-Performance Optimization** - Caching, batching, pooling
-- **Comprehensive Testing** - 107 tests across all features
+- **Dead Letter Queues** - Advanced error handling with circuit breaker (NEW)
+- **Comprehensive Testing** - 133 tests across all features
 
 ### Upcoming Features
 
-- **Dead Letter Queues** - Advanced error handling
 - **PyPI Distribution** - Official package release
 - **JSON Schema Support** - 4th serialization format
 - **Confluent Connect** - Native connector integration
@@ -622,19 +726,21 @@ The integration includes comprehensive error handling for all serialization form
 - **Only integration supporting all 3 major formats** (JSON, Avro, Protobuf)
 - **Enterprise-grade security** with SASL/SSL support
 - **Production-ready** with comprehensive monitoring
+- **Advanced error handling** with Dead Letter Queue support (NEW)
 
 ### Developer Experience
 
 - **Familiar Dagster patterns** - feels native to the platform
-- **Comprehensive examples** for all use cases including security
+- **Comprehensive examples** for all use cases including security and DLQ
 - **Extensive documentation** and testing
 
 ### Production Ready
 
-- **107 comprehensive tests** covering all scenarios including security
+- **133 comprehensive tests** covering all scenarios including security and DLQ
 - **Real-world deployment** patterns and examples
 - **Performance optimization** tools and monitoring
 - **Enterprise security** for production Kafka clusters
+- **Bulletproof error handling** with circuit breaker patterns (NEW)
 
 ### Community Driven
 
@@ -653,6 +759,7 @@ Ways to contribute:
 - **Documentation** - Help improve examples and guides  
 - **Code contributions** - PRs welcome for any improvements  
 - **Security testing** - Help test security configurations
+- **DLQ testing** - Help test error handling scenarios (NEW)
 
 ## License
 
@@ -676,8 +783,8 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## The Complete Enterprise Solution
 
-**The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features and complete security.
+**The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features, complete security, and advanced Dead Letter Queue error handling.
 
-*Version 0.8.0 - Enhanced Security Release - Built by Kingsley Okonkwo*
+*Version 0.9.0 - Dead Letter Queue Release - Built by Kingsley Okonkwo*
 
 *Solving real data engineering problems with comprehensive open source solutions.*
