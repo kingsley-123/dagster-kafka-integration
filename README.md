@@ -6,6 +6,8 @@ The first and most comprehensive Kafka integration for Dagster with complete ent
 
 **Version 1.0.0** - Dead Letter Queue Release with enterprise-grade error handling:
 
+🎉 **NOW LIVE ON PyPI** - Successfully published and validated! Install with `pip install dagster-kafka` and use CLI tools immediately.
+
 - **JSON Support**: Native JSON message consumption from Kafka topics
 - **Avro Support**: Full Avro message support with Schema Registry integration  
 - **Protobuf Support**: Complete Protocol Buffers integration with schema management
@@ -41,6 +43,8 @@ Complete SASL/SSL authentication and encryption for production deployments.
 ```bash
 pip install dagster-kafka
 ```
+
+✅ **Validated Installation**: Successfully tested in fresh environments. CLI tools work immediately after installation.
 
 ## Quick Start
 
@@ -780,7 +784,7 @@ The integration includes comprehensive error handling for all serialization form
 - **Dead Letter Queues** - Advanced error handling with circuit breaker
 - **Complete DLQ Tooling Suite** - Inspector, Replayer, Monitoring, Alerting
 - **Comprehensive Testing** - 133 tests across all features
-- **PyPI Distribution** - Official package release
+- **PyPI Distribution** - ✅ LIVE: Official package published and validated
 
 ### Upcoming Features
 
