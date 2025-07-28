@@ -1,4 +1,4 @@
-﻿"""Dagster Kafka Integration Package
+"""Dagster Kafka Integration Package
 
 Provides Kafka integration for Dagster data pipelines with support for:
 - JSON message consumption
@@ -44,7 +44,7 @@ from .performance import (
     PerformanceMetrics
 )
 
-__version__ = "0.9.0"
+__version__ = "1.0.0"
 
 __all__ = [
     "KafkaResource",

@@ -4,7 +4,7 @@ The first and most comprehensive Kafka integration for Dagster with complete ent
 
 ## Complete Enterprise Solution
 
-**Version 0.9.0** - Dead Letter Queue Release with enterprise-grade error handling:
+**Version 1.0.0** - Dead Letter Queue Release with enterprise-grade error handling:
 
 - **JSON Support**: Native JSON message consumption from Kafka topics
 - **Avro Support**: Full Avro message support with Schema Registry integration  
@@ -30,7 +30,7 @@ Schema Registry integration with evolution validation and DLQ support.
 ### Protobuf Support
 High-performance binary serialization with comprehensive tooling and DLQ handling.
 
-### Dead Letter Queue (DLQ) - New in v0.9.0
+### Dead Letter Queue (DLQ) - New in v1.0.0
 Enterprise-grade error handling with automatic routing of failed messages to dead letter topics for debugging and reprocessing.
 
 ### Enterprise Security
@@ -39,7 +39,7 @@ Complete SASL/SSL authentication and encryption for production deployments.
 ## Installation
 
 ```bash
-pip install git+https://github.com/kingsley-123/dagster-kafka-integration.git
+pip install dagster-kafka
 ```
 
 ## Quick Start
@@ -162,7 +162,7 @@ defs = Definitions(
 )
 ```
 
-## Dead Letter Queue (DLQ) Features (v0.9.0)
+## Dead Letter Queue (DLQ) Features (v1.0.0)
 
 ### DLQ Strategies
 
@@ -221,30 +221,30 @@ DLQ messages include rich metadata for debugging:
 }
 ```
 
-## DLQ Production Tooling Suite (v0.9.0)
+## DLQ Production Tooling Suite (v1.0.0)
 
 Complete enterprise-grade tooling for Dead Letter Queue management and monitoring.
 
-### DLQ Inspector (`dlq_inspector.py`)
+### DLQ Inspector
 Analyze failed messages in DLQ topics with comprehensive error pattern analysis.
 
 ```bash
 # Analyze DLQ messages for error patterns
-python dlq_inspector.py --topic user-events --max-messages 20
+dlq-inspector --topic user-events --max-messages 20
 
 # Inspect specific DLQ topic
-python dlq_inspector.py --dlq-topic payments_dlq --max-messages 50
+dlq-inspector --dlq-topic payments_dlq --max-messages 50
 ```
 
-### DLQ Message Replayer (`dlq_replayer.py`)
+### DLQ Message Replayer
 Replay failed messages back to original topics with filtering and safety controls.
 
 ```bash
 # Replay messages with filtering
-python dlq_replayer.py --source-topic user-events_dlq --target-topic user-events --error-types "timeout_error" --max-messages 100 --confirm
+dlq-replayer --source-topic user-events_dlq --target-topic user-events --error-types "timeout_error" --max-messages 100 --confirm
 
 # Replay with rate limiting for production safety  
-python dlq_replayer.py --source-topic orders_dlq --target-topic orders --rate-limit 10 --dry-run
+dlq-replayer --source-topic orders_dlq --target-topic orders --rate-limit 10 --dry-run
 ```
 
 ### DLQ Monitoring Suite
@@ -252,16 +252,16 @@ Production monitoring and alerting for DLQ health across multiple topics.
 
 ```bash
 # Monitor DLQ health across topics
-python dlq_monitor.py --topics user-events_dlq,orders_dlq,payments_dlq --output-format json
+dlq-monitor --topics user-events_dlq,orders_dlq,payments_dlq --output-format json
 
 # Set up automated alerting
-python dlq_alerts.py --topic critical-events_dlq --max-messages 500 --webhook-url https://hooks.slack.com/...
+dlq-alerts --topic critical-events_dlq --max-messages 500 --webhook-url https://hooks.slack.com/...
 
 # Operations dashboard
-python dlq_dashboard.py --topics user-events_dlq,orders_dlq --warning-threshold 100 --critical-threshold 1000
+dlq-dashboard --topics user-events_dlq,orders_dlq --warning-threshold 100 --critical-threshold 1000
 ```
 
-## Enterprise Security Features (v0.8.0)
+## Enterprise Security Features (v1.0.0)
 
 ### Security Protocols Supported
 
@@ -619,9 +619,17 @@ examples/
 
 ## Development & Testing
 
-### Local Development Setup
+### Production Installation
 
 ```bash
+# For production use
+pip install dagster-kafka
+```
+
+### Development Setup
+
+```bash
+# For development and contributions
 git clone https://github.com/kingsley-123/dagster-kafka-integration.git
 cd dagster-kafka-integration
 
@@ -635,7 +643,7 @@ pip install -e .
 ### Comprehensive Testing
 
 ```bash
-# Start Kafka and Schema Registry
+# Start Kafka and Schema Registry (for development)
 docker-compose up -d
 
 # Run all 133 tests across all formats, security configurations, and DLQ functionality
@@ -644,14 +652,38 @@ python -m pytest tests/ -v
 # Test specific modules
 python -m pytest tests/test_avro_io_manager.py -v      # Avro tests
 python -m pytest tests/test_protobuf_io_manager.py -v  # Protobuf tests
-python -m pytest tests/test_dlq.py -v                 # DLQ tests (NEW)
+python -m pytest tests/test_dlq.py -v                 # DLQ tests
 python -m pytest tests/test_security.py -v            # Security tests
 python -m pytest tests/test_schema_evolution.py -v    # Schema evolution
 python -m pytest tests/test_monitoring.py -v          # Monitoring
 python -m pytest tests/test_performance.py -v         # Performance
 ```
 
-### Running Examples
+### CLI Tools Usage
+
+```bash
+# DLQ Inspector - Analyze failed messages
+dlq-inspector --help
+dlq-inspector --topic user-events --max-messages 20
+
+# DLQ Replayer - Replay messages with safety controls
+dlq-replayer --help
+dlq-replayer --source-topic orders_dlq --target-topic orders --dry-run
+
+# DLQ Monitor - Core monitoring and metrics
+dlq-monitor --help
+dlq-monitor --topics user-events_dlq,orders_dlq --output-format json
+
+# DLQ Alerts - Configurable alerting system
+dlq-alerts --help
+dlq-alerts --topic critical-events_dlq --max-messages 500
+
+# DLQ Dashboard - Operations dashboard
+dlq-dashboard --help
+dlq-dashboard --topics user-events_dlq,orders_dlq
+```
+
+### Running Examples (Development)
 
 ```bash
 # JSON examples
@@ -665,18 +697,13 @@ python examples/avro_examples/production_schema_migration.py
 python examples/protobuf_examples/simple_protobuf_example.py
 python examples/protobuf_examples/advanced_protobuf_example.py
 
-# DLQ examples (Complete Production Tooling)
-python examples/dlq_examples/dlq_inspector.py --topic user-events --max-messages 20
-python examples/dlq_examples/dlq_replayer.py --source-topic orders_dlq --target-topic orders --dry-run
-python examples/dlq_examples/dlq_monitor.py --topics user-events_dlq,orders_dlq --output-format json
-python examples/dlq_examples/dlq_alerts.py --topic critical-events_dlq --max-messages 500
-python examples/dlq_examples/dlq_dashboard.py --topics user-events_dlq,orders_dlq
-
 # Security examples
 python examples/security_examples/production_security_example.py
 
 # Performance examples
 python examples/performance_examples/high_throughput_pipeline.py
+
+# Note: Source files available in examples/ directory for development reference
 ```
 
 ## Schema Registry Support
@@ -711,7 +738,7 @@ The integration includes comprehensive error handling for all serialization form
 - **Graceful Degradation**: Accept minor breaking changes
 - **Retry with Backoff**: Exponential backoff retry logic
 - **Security Retry**: Automatic credential refresh and retry
-- **Dead Letter Queue**: Automatic routing of failed messages (NEW)
+- **Dead Letter Queue**: Automatic routing of failed messages
 
 ### Performance Optimization
 
@@ -719,13 +746,13 @@ The integration includes comprehensive error handling for all serialization form
 - **Adaptive Batching**: Dynamic batch size optimization
 - **Connection Pooling**: Efficient resource management with security context
 - **Metrics Collection**: Comprehensive performance monitoring
-- **DLQ Optimization**: Minimal overhead error handling (NEW)
+- **DLQ Optimization**: Minimal overhead error handling
 
 ### Monitoring and Alerting
 
 - **Real-time Metrics**: Validation attempts, cache hit rates, throughput
 - **Security Metrics**: Authentication success/failure rates
-- **DLQ Metrics**: Error rates, retry counts, circuit breaker states (NEW)
+- **DLQ Metrics**: Error rates, retry counts, circuit breaker states
 - **Alert Integration**: Slack, email, and custom webhooks
 - **Threshold Management**: Configurable alert thresholds
 - **Historical Analysis**: Performance trends and optimization insights
@@ -737,11 +764,11 @@ The integration includes comprehensive error handling for all serialization form
 - **Authorization**: Kafka ACL support through security protocols
 - **Validation**: Comprehensive security configuration validation
 - **Monitoring**: Security-aware logging and metrics
-- **DLQ Security**: Secure DLQ topic access and encryption (NEW)
+- **DLQ Security**: Secure DLQ topic access and encryption
 
 ## Roadmap
 
-### Completed Features (v0.9.0)
+### Completed Features (v1.0.0)
 
 - **JSON Support** - Complete native integration
 - **Avro Support** - Full Schema Registry + evolution validation
@@ -750,13 +777,13 @@ The integration includes comprehensive error handling for all serialization form
 - **Schema Evolution** - All compatibility levels across formats
 - **Production Monitoring** - Real-time alerting and metrics
 - **High-Performance Optimization** - Caching, batching, pooling
-- **Dead Letter Queues** - Advanced error handling with circuit breaker (NEW)
-- **Complete DLQ Tooling Suite** - Inspector, Replayer, Monitoring, Alerting (NEW)
+- **Dead Letter Queues** - Advanced error handling with circuit breaker
+- **Complete DLQ Tooling Suite** - Inspector, Replayer, Monitoring, Alerting
 - **Comprehensive Testing** - 133 tests across all features
+- **PyPI Distribution** - Official package release
 
 ### Upcoming Features
 
-- **PyPI Distribution** - Official package release
 - **JSON Schema Support** - 4th serialization format
 - **Confluent Connect** - Native connector integration
 - **Kafka Streams** - Stream processing integration
@@ -775,15 +802,15 @@ The integration includes comprehensive error handling for all serialization form
 - **Only integration supporting all 3 major formats** (JSON, Avro, Protobuf)
 - **Enterprise-grade security** with SASL/SSL support
 - **Production-ready** with comprehensive monitoring
-- **Advanced error handling** with Dead Letter Queue support (NEW)
-- **Complete DLQ Tooling Suite** for enterprise operations (NEW)
+- **Advanced error handling** with Dead Letter Queue support
+- **Complete DLQ Tooling Suite** for enterprise operations
 
 ### Developer Experience
 
 - **Familiar Dagster patterns** - feels native to the platform
 - **Comprehensive examples** for all use cases including security and DLQ
 - **Extensive documentation** and testing
-- **Production-ready tooling** for DLQ management (NEW)
+- **Production-ready CLI tooling** for DLQ management
 
 ### Production Ready
 
@@ -791,8 +818,8 @@ The integration includes comprehensive error handling for all serialization form
 - **Real-world deployment** patterns and examples
 - **Performance optimization** tools and monitoring
 - **Enterprise security** for production Kafka clusters
-- **Bulletproof error handling** with circuit breaker patterns (NEW)
-- **Complete operational tooling** for DLQ management (NEW)
+- **Bulletproof error handling** with circuit breaker patterns
+- **Complete operational tooling** for DLQ management
 
 ### Community Driven
 
@@ -811,7 +838,7 @@ Ways to contribute:
 - **Documentation** - Help improve examples and guides  
 - **Code contributions** - PRs welcome for any improvements  
 - **Security testing** - Help test security configurations
-- **DLQ testing** - Help test error handling scenarios (NEW)
+- **DLQ testing** - Help test error handling scenarios
 
 ## License
 
@@ -837,6 +864,6 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 **The first and most comprehensive Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, and complete operational tooling suite.
 
-*Version 0.9.0 - Dead Letter Queue Release with Complete Tooling Suite - Built by Kingsley Okonkwo*
+*Version 1.0.0 - Dead Letter Queue Release with Complete Tooling Suite - Built by Kingsley Okonkwo*
 
 *Solving real data engineering problems with comprehensive open source solutions.*
