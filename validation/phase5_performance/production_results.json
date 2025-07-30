@@ -1,0 +1,29 @@
+[
+  {
+    "message_size_category": "small",
+    "actual_message_size_bytes": 372,
+    "message_count": 100,
+    "duration_seconds": 0.153,
+    "throughput_msgs_per_sec": 653.35,
+    "memory_used_mb": 0.15,
+    "total_data_mb": 0.04
+  },
+  {
+    "message_size_category": "medium",
+    "actual_message_size_bytes": 922,
+    "message_count": 50,
+    "duration_seconds": 0.15,
+    "throughput_msgs_per_sec": 333.65,
+    "memory_used_mb": 0.07,
+    "total_data_mb": 0.04
+  },
+  {
+    "message_size_category": "small",
+    "actual_message_size_bytes": 372,
+    "message_count": 200,
+    "duration_seconds": 0.167,
+    "throughput_msgs_per_sec": 1199.24,
+    "memory_used_mb": 0.23,
+    "total_data_mb": 0.07
+  }
+]

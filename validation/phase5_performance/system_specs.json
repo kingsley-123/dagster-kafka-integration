@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-07-29T13:57:29.964192",
+  "platform": {
+    "system": "Windows",
+    "node": "Johnbosco",
+    "release": "11",
+    "version": "10.0.26100",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+  },
+  "cpu": {
+    "physical_cores": 12,
+    "total_cores": 16,
+    "max_frequency": "1700.00 Mhz",
+    "current_frequency": "1700.00 Mhz"
+  },
+  "memory": {
+    "total": "23.72 GB",
+    "available": "6.72 GB",
+    "percent_used": "71.7%"
+  },
+  "disk": {
+    "total": "475.72 GB",
+    "free": "166.82 GB",
+    "percent_used": "64.9%"
+  }
+}

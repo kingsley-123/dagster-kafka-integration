@@ -1,0 +1,97 @@
+{
+  "test_id": "1747286b",
+  "test_timestamp": "2025-07-29T16:08:18.375161",
+  "validation_topic": "data-validation-topic",
+  "validation_messages_sent": 3,
+  "validation_result": {
+    "topic": "data-validation-topic",
+    "total_attempts": 5,
+    "successful_materializations": 5,
+    "expected_messages": 3,
+    "consumed_data_results": [
+      {
+        "asset_execution_time": "2025-07-29T16:08:17.045245",
+        "status": "data_validation_executed",
+        "validation_attempt": 1,
+        "message": "Asset executed - checking if Kafka data was consumed"
+      },
+      {
+        "asset_execution_time": "2025-07-29T16:08:17.276003",
+        "status": "data_validation_executed",
+        "validation_attempt": 2,
+        "message": "Asset executed - checking if Kafka data was consumed"
+      },
+      {
+        "asset_execution_time": "2025-07-29T16:08:17.521350",
+        "status": "data_validation_executed",
+        "validation_attempt": 3,
+        "message": "Asset executed - checking if Kafka data was consumed"
+      },
+      {
+        "asset_execution_time": "2025-07-29T16:08:17.751103",
+        "status": "data_validation_executed",
+        "validation_attempt": 4,
+        "message": "Asset executed - checking if Kafka data was consumed"
+      },
+      {
+        "asset_execution_time": "2025-07-29T16:08:18.032706",
+        "status": "data_validation_executed",
+        "validation_attempt": 5,
+        "message": "Asset executed - checking if Kafka data was consumed"
+      }
+    ],
+    "data_consumption_validated": true
+  },
+  "io_test_result": null,
+  "final_assessment": "PARTIAL",
+  "sent_validation_messages": [
+    {
+      "validation_id": "VALIDATE_1747286b_000",
+      "test_batch": "1747286b",
+      "sequence_number": 0,
+      "timestamp": "2025-07-29T16:08:15.845376",
+      "validation_data": {
+        "magic_number": 12345,
+        "test_string": "KAFKA_DATA_TEST_0",
+        "verification_hash": "HASH_1747286b_0_VERIFIED"
+      },
+      "business_data": {
+        "user_id": "user_1000",
+        "transaction_amount": 100.5,
+        "product_category": "electronics"
+      }
+    },
+    {
+      "validation_id": "VALIDATE_1747286b_001",
+      "test_batch": "1747286b",
+      "sequence_number": 1,
+      "timestamp": "2025-07-29T16:08:15.845376",
+      "validation_data": {
+        "magic_number": 12346,
+        "test_string": "KAFKA_DATA_TEST_1",
+        "verification_hash": "HASH_1747286b_1_VERIFIED"
+      },
+      "business_data": {
+        "user_id": "user_1001",
+        "transaction_amount": 125.75,
+        "product_category": "books"
+      }
+    },
+    {
+      "validation_id": "VALIDATE_1747286b_002",
+      "test_batch": "1747286b",
+      "sequence_number": 2,
+      "timestamp": "2025-07-29T16:08:15.845376",
+      "validation_data": {
+        "magic_number": 12347,
+        "test_string": "KAFKA_DATA_TEST_2",
+        "verification_hash": "HASH_1747286b_2_VERIFIED"
+      },
+      "business_data": {
+        "user_id": "user_1002",
+        "transaction_amount": 151.0,
+        "product_category": "clothing"
+      }
+    }
+  ]
+}

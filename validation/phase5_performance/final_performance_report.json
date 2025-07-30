@@ -1,0 +1,62 @@
+{
+  "report_metadata": {
+    "generated_at": "2025-07-29T15:55:00.705160",
+    "validation_phase": "Phase 5 - Performance Testing",
+    "package": "dagster-kafka v1.0.0"
+  },
+  "test_environment": {
+    "timestamp": "2025-07-29T13:57:29.964192",
+    "platform": {
+      "system": "Windows",
+      "node": "Johnbosco",
+      "release": "11",
+      "version": "10.0.26100",
+      "machine": "AMD64",
+      "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+    },
+    "cpu": {
+      "physical_cores": 12,
+      "total_cores": 16,
+      "max_frequency": "1700.00 Mhz",
+      "current_frequency": "1700.00 Mhz"
+    },
+    "memory": {
+      "total": "23.72 GB",
+      "available": "6.72 GB",
+      "percent_used": "71.7%"
+    },
+    "disk": {
+      "total": "475.72 GB",
+      "free": "166.82 GB",
+      "percent_used": "64.9%"
+    }
+  },
+  "production_performance": {
+    "tests_completed": 3,
+    "message_sizes_tested": [
+      "small",
+      "medium"
+    ],
+    "peak_throughput": {
+      "value": 1199.24,
+      "message_size": "small"
+    },
+    "throughput_by_size": {
+      "small": {
+        "avg_throughput": 926.3,
+        "max_throughput": 1199.24,
+        "test_count": 2
+      },
+      "medium": {
+        "avg_throughput": 333.65,
+        "max_throughput": 333.65,
+        "test_count": 1
+      }
+    }
+  },
+  "overall_assessment": {
+    "status": "PASS",
+    "issues": [],
+    "ready_for_production": true
+  }
+}

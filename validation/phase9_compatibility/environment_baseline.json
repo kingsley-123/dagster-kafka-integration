@@ -1,0 +1,28 @@
+{
+  "test_timestamp": "2025-07-29T16:15:17.859410",
+  "system_info": {
+    "python_version": "3.12.10 (main, May 22 2025, 02:00:39) [MSC v.1943 64 bit (AMD64)]",
+    "python_version_info": {
+      "major": 3,
+      "minor": 12,
+      "micro": 10
+    },
+    "platform": "Windows-11-10.0.26100-SP0",
+    "architecture": [
+      "64bit",
+      "WindowsPE"
+    ],
+    "machine": "AMD64"
+  },
+  "package_versions": {
+    "dagster": "1.11.3",
+    "dagster-kafka": "1.0.0",
+    "kafka-python": "2.2.15",
+    "psutil": "7.0.0"
+  },
+  "functionality_test": {
+    "kafka_resource_creation": "SUCCESS",
+    "io_manager_creation": "SUCCESS",
+    "basic_functionality": "PASS"
+  }
+}

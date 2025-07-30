@@ -1,0 +1,35 @@
+{
+  "test_timestamp": "2025-07-29T16:15:20.451579",
+  "python_info": {
+    "version": "3.12.10",
+    "major": 3,
+    "minor": 12,
+    "micro": 10,
+    "executable": "C:\\Users\\rejoi\\dagster-kafka-integration\\validation_env\\Scripts\\python.exe"
+  },
+  "version_support": {
+    "current_version": [
+      3,
+      12
+    ],
+    "is_supported": true,
+    "is_tested": true,
+    "supported_range": "3.9+ to 3.13",
+    "support_status": "SUPPORTED"
+  },
+  "import_results": {
+    "import_test": "PASS",
+    "imports": {
+      "dagster_kafka": "SUCCESS",
+      "dagster": "SUCCESS",
+      "kafka": "SUCCESS"
+    }
+  },
+  "resource_results": {
+    "resource_creation": "PASS",
+    "kafka_resource": "SUCCESS",
+    "io_manager": "SUCCESS"
+  },
+  "overall_compatible": true,
+  "compatibility_status": "COMPATIBLE"
+}

@@ -1,0 +1,134 @@
+{
+  "audit_timestamp": "2025-07-29T19:46:03.285855",
+  "audit_type": "network_security",
+  "tests_performed": {
+    "security_protocols": {
+      "test_type": "security_protocol_support",
+      "protocols_tested": 4,
+      "protocols_supported": 4,
+      "high_security_available": 2,
+      "production_ready_available": 2,
+      "protocol_results": [
+        {
+          "protocol": "PLAINTEXT",
+          "supported": true,
+          "security_level": "LOW",
+          "production_suitable": false,
+          "config_accepted": true
+        },
+        {
+          "protocol": "SSL",
+          "supported": true,
+          "security_level": "HIGH",
+          "production_suitable": true,
+          "config_accepted": true
+        },
+        {
+          "protocol": "SASL_PLAINTEXT",
+          "supported": true,
+          "security_level": "MEDIUM",
+          "production_suitable": false,
+          "config_accepted": true
+        },
+        {
+          "protocol": "SASL_SSL",
+          "supported": true,
+          "security_level": "HIGH",
+          "production_suitable": true,
+          "config_accepted": true
+        }
+      ],
+      "security_status": "SECURE"
+    },
+    "sasl_mechanisms": {
+      "test_type": "sasl_mechanism_support",
+      "mechanisms_tested": 4,
+      "mechanisms_supported": 4,
+      "high_security_mechanisms": 3,
+      "sasl_results": [
+        {
+          "mechanism": "PLAIN",
+          "supported": true,
+          "security_level": "BASIC",
+          "config_accepted": true
+        },
+        {
+          "mechanism": "SCRAM-SHA-256",
+          "supported": true,
+          "security_level": "HIGH",
+          "config_accepted": true
+        },
+        {
+          "mechanism": "SCRAM-SHA-512",
+          "supported": true,
+          "security_level": "HIGH",
+          "config_accepted": true
+        },
+        {
+          "mechanism": "GSSAPI",
+          "supported": true,
+          "security_level": "HIGH",
+          "config_accepted": true
+        }
+      ],
+      "security_status": "SECURE"
+    },
+    "ssl_configurations": {
+      "test_type": "ssl_configuration_security",
+      "configs_tested": 4,
+      "configs_supported": 4,
+      "max_security_features": 3,
+      "advanced_configs_available": 3,
+      "ssl_results": [
+        {
+          "config_name": "basic_ssl",
+          "supported": true,
+          "security_features": [
+            "encryption"
+          ],
+          "feature_count": 1,
+          "config_accepted": true
+        },
+        {
+          "config_name": "client_cert_auth",
+          "supported": true,
+          "security_features": [
+            "encryption",
+            "client_authentication"
+          ],
+          "feature_count": 2,
+          "config_accepted": true
+        },
+        {
+          "config_name": "ssl_with_hostname_verification",
+          "supported": true,
+          "security_features": [
+            "encryption",
+            "hostname_verification"
+          ],
+          "feature_count": 2,
+          "config_accepted": true
+        },
+        {
+          "config_name": "ssl_with_password_protected_key",
+          "supported": true,
+          "security_features": [
+            "encryption",
+            "client_authentication",
+            "key_protection"
+          ],
+          "feature_count": 3,
+          "config_accepted": true
+        }
+      ],
+      "security_status": "SECURE"
+    }
+  },
+  "summary": {
+    "total_tests": 3,
+    "secure_tests": 3,
+    "insufficient_tests": 0,
+    "error_tests": 0,
+    "overall_security_status": "SECURE"
+  }
+}

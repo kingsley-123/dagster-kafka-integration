@@ -1,0 +1,43 @@
+{
+  "test_timestamp": "2025-07-29T16:15:22.704237",
+  "dagster_version_check": {
+    "current_version_string": "1.11.3",
+    "current_version_tuple": [
+      1,
+      11,
+      3
+    ],
+    "minimum_required": [
+      1,
+      5,
+      0
+    ],
+    "recommended_version": [
+      1,
+      8,
+      0
+    ],
+    "is_compatible": true,
+    "is_recommended": true,
+    "version_status": "COMPATIBLE"
+  },
+  "import_results": {
+    "core_imports": "PASS",
+    "imports": {
+      "asset": "SUCCESS",
+      "materialize": "SUCCESS",
+      "resource": "SUCCESS",
+      "IOManager": "SUCCESS",
+      "ConfigurableResource": "SUCCESS",
+      "AssetMaterialization": "SUCCESS"
+    }
+  },
+  "integration_results": {
+    "integration_test": "PASS",
+    "kafka_resource": "SUCCESS",
+    "io_manager": "SUCCESS",
+    "asset_creation": "SUCCESS"
+  },
+  "overall_compatible": true,
+  "compatibility_status": "COMPATIBLE"
+}

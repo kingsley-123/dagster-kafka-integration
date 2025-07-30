@@ -5,7 +5,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name="dagster-kafka",
-    version="1.0.0",
+    version="1.1.0",
     author="Kingsley Okonkwo",
     description="Complete Kafka integration for Dagster with enterprise DLQ tooling",
     long_description=long_description,

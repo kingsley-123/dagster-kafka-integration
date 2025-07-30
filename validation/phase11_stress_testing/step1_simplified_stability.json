@@ -1,0 +1,19 @@
+{
+  "test_timestamp": "2025-07-29T21:56:02.485771",
+  "test_type": "simplified_extended_stability",
+  "stability_result": {
+    "test_duration_minutes": 5.036045257250468,
+    "total_attempts": 137,
+    "successful_materializations": 137,
+    "success_rate_percent": 100.0,
+    "error_count": 0,
+    "last_error": null,
+    "memory_initial_mb": 93.7265625,
+    "memory_final_mb": 137.1640625,
+    "memory_change_mb": 43.4375,
+    "memory_samples": 14,
+    "stability_issues": [],
+    "stability_status": "STABLE",
+    "overall_result": "PASS"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "test_id": "ea0b1efc",
+  "test_timestamp": "2025-07-29T16:04:20.105059",
+  "test_topic": "integration-test-topic",
+  "messages_sent": 5,
+  "messages_in_kafka": 5,
+  "consumption_result": {
+    "topic": "integration-test-topic",
+    "materializations_attempted": 10,
+    "successful_materializations": 10,
+    "expected_messages": 5,
+    "test_completed": true
+  },
+  "final_assessment": "PASS",
+  "sent_messages": [
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_000",
+      "sequence": 0,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 0 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 0,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_001",
+      "sequence": 1,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 1 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 1,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_002",
+      "sequence": 2,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 2 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 2,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_003",
+      "sequence": 3,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 3 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 3,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_004",
+      "sequence": 4,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 4 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 4,
+        "total_messages": 5
+      }
+    }
+  ],
+  "kafka_messages": [
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_000",
+      "sequence": 0,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 0 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 0,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_001",
+      "sequence": 1,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 1 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 1,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_002",
+      "sequence": 2,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 2 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 2,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_003",
+      "sequence": 3,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 3 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 3,
+        "total_messages": 5
+      }
+    },
+    {
+      "test_id": "ea0b1efc",
+      "message_id": "msg_ea0b1efc_004",
+      "sequence": 4,
+      "timestamp": "2025-07-29T16:04:10.395310",
+      "payload": "Test payload for message 4 in test ea0b1efc",
+      "metadata": {
+        "test_run": "ea0b1efc",
+        "message_index": 4,
+        "total_messages": 5
+      }
+    }
+  ]
+}

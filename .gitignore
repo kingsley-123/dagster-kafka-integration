@@ -26,3 +26,43 @@ fresh_test/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Virtual environments
+validation_env/
+test_pypi_install/
+fresh_test/
+venv/
+env/
+ENV/
+*.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
