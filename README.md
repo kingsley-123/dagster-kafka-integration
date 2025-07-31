@@ -1,4 +1,4 @@
-﻿# Dagster Kafka Integration
+# Dagster Kafka Integration
 
 [![PyPI version](https://badge.fury.io/py/dagster-kafka.svg)](https://badge.fury.io/py/dagster-kafka)
 [![Python Support](https://img.shields.io/pypi/pyversions/dagster-kafka.svg)](https://pypi.org/project/dagster-kafka/)
@@ -9,7 +9,7 @@
 
 ## Comprehensive Enterprise Validation
 
-**Version 1.1.0** - Most validated Kafka integration package ever created:
+**Version 1.1.1** - Most validated Kafka integration package ever created:
 
 ### 11-Phase Enterprise Validation Completed
 - **EXCEPTIONAL Performance**: 1,199 messages/second peak throughput
@@ -22,11 +22,11 @@
 ### Validation Results Summary
 | Phase | Test Type | Result | Key Metrics |
 |-------|-----------|--------|-------------|
-| **Phase 5** | Performance Testing | ✅ **PASS** | 1,199 msgs/sec peak throughput |
-| **Phase 7** | Integration Testing | ✅ **PASS** | End-to-end message flow validated |
-| **Phase 9** | Compatibility Testing | ✅ **PASS** | Python 3.12 + Dagster 1.11.3 |
-| **Phase 10** | Security Audit | ✅ **PASS** | Credential + network security |
-| **Phase 11** | Stress Testing | ✅ **EXCEPTIONAL** | 100% success rate, 305 operations |
+| **Phase 5** | Performance Testing | ? **PASS** | 1,199 msgs/sec peak throughput |
+| **Phase 7** | Integration Testing | ? **PASS** | End-to-end message flow validated |
+| **Phase 9** | Compatibility Testing | ? **PASS** | Python 3.12 + Dagster 1.11.3 |
+| **Phase 10** | Security Audit | ? **PASS** | Credential + network security |
+| **Phase 11** | Stress Testing | ? **EXCEPTIONAL** | 100% success rate, 305 operations |
 
 > **Enterprise Validation**: This package has undergone the most comprehensive validation process ever conducted for a Dagster integration package, exceeding enterprise standards across all critical dimensions.
 
@@ -88,7 +88,7 @@ dlq-dashboard --topics user-events_dlq,orders_dlq
 ```
 PASS Extended Stability: 5+ minutes, 137/137 successful materializations
 PASS Resource Management: 15 cycles, no memory leaks detected  
-PASS Concurrent Usage: 8 threads × 15 operations = 100% success
+PASS Concurrent Usage: 8 threads � 15 operations = 100% success
 PASS Comprehensive Stress: 8+ minutes, 305 operations, EXCEPTIONAL rating
 ```
 
@@ -299,13 +299,13 @@ docker-compose up -d
 
 ```
 examples/
-├── json_examples/              # JSON message examples
-├── avro_examples/              # Avro schema examples  
-├── protobuf_examples/          # Protobuf examples
-├── dlq_examples/               # Complete DLQ tooling suite
-├── security_examples/          # Enterprise security examples
-├── performance_examples/       # Performance optimization
-└── production_examples/        # Enterprise deployment patterns
++-- json_examples/              # JSON message examples
++-- avro_examples/              # Avro schema examples  
++-- protobuf_examples/          # Protobuf examples
++-- dlq_examples/               # Complete DLQ tooling suite
++-- security_examples/          # Enterprise security examples
++-- performance_examples/       # Performance optimization
++-- production_examples/        # Enterprise deployment patterns
 ```
 
 ## Why Choose This Integration
@@ -351,7 +351,7 @@ examples/
 - **Dead Letter Queues** - Advanced error handling with circuit breaker
 - **Complete DLQ Tooling Suite** - Inspector, Replayer, Monitoring, Alerting
 - **Comprehensive Testing** - 11-phase enterprise validation
-- **PyPI Distribution** - ✅ LIVE: Official package published and validated
+- **PyPI Distribution** - ? LIVE: Official package published and validated
 - **Security Hardening** - Configuration injection protection
 
 ### Upcoming Features
@@ -395,6 +395,6 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 **The most comprehensively validated Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, and complete operational tooling suite.
 
-**Version 1.1.0** - Enterprise Validation Release with Security Hardening
+**Version 1.1.1** - Enterprise Validation Release with Security Hardening
 
 *Built by [Kingsley Okonkwo](https://github.com/kingsley-123) - Solving real data engineering problems with comprehensive open source solutions.*
