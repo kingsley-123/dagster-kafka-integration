@@ -8,7 +8,7 @@ The most comprehensively validated Kafka integration for Dagster with enterprise
 
 ## Enterprise Validation Completed
 
-**Version 1.1.1** - Most validated Kafka integration package ever created:
+**Version 1.1.2** - Most validated Kafka integration package ever created:
 
 **11-Phase Comprehensive Validation** - Unprecedented testing methodology  
 **Exceptional Performance** - 1,199 messages/second peak throughput proven  
@@ -140,14 +140,14 @@ Apache 2.0
 
 ---
 
-The most comprehensively validated Kafka integration for Dagster - Version 1.1.0 Enterprise Validation Release with Security Hardening.
+The most comprehensively validated Kafka integration for Dagster - Version 1.1.2 Enterprise Validation Release with Security Hardening.
 
 Built by Kingsley Okonkwo - Solving real data engineering problems with comprehensive open source solutions.
 """
 
 setup(
     name="dagster-kafka",
-    version="1.1.1",
+    version="1.1.2",
     author="Kingsley Okonkwo",
     description="Complete Kafka integration for Dagster with enterprise DLQ tooling",
     long_description=long_description,
