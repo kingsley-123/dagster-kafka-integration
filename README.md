@@ -5,7 +5,7 @@
 [![Downloads](https://pepy.tech/badge/dagster-kafka)](https://pepy.tech/project/dagster-kafka)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**The most comprehensively validated Kafka integration for Dagster** - Supporting all three major serialization formats with enterprise-grade features, complete security, and operational tooling.
+**The most comprehensively validated Kafka integration for Dagster** - Supporting all three major serialization formats with enterprise-grade features, complete security, operational tooling, and YAML-based Components.
 
 ## Comprehensive Enterprise Validation
 
@@ -22,11 +22,11 @@
 ### Validation Results Summary
 | Phase | Test Type | Result | Key Metrics |
 |-------|-----------|--------|-------------|
-| **Phase 5** | Performance Testing | ? **PASS** | 1,199 msgs/sec peak throughput |
-| **Phase 7** | Integration Testing | ? **PASS** | End-to-end message flow validated |
-| **Phase 9** | Compatibility Testing | ? **PASS** | Python 3.12 + Dagster 1.11.3 |
-| **Phase 10** | Security Audit | ? **PASS** | Credential + network security |
-| **Phase 11** | Stress Testing | ? **EXCEPTIONAL** | 100% success rate, 305 operations |
+| **Phase 5** | Performance Testing | ✅ **PASS** | 1,199 msgs/sec peak throughput |
+| **Phase 7** | Integration Testing | ✅ **PASS** | End-to-end message flow validated |
+| **Phase 9** | Compatibility Testing | ✅ **PASS** | Python 3.12 + Dagster 1.11.3 |
+| **Phase 10** | Security Audit | ✅ **PASS** | Credential + network security |
+| **Phase 11** | Stress Testing | ✅ **EXCEPTIONAL** | 100% success rate, 305 operations |
 
 > **Enterprise Validation**: This package has undergone the most comprehensive validation process ever conducted for a Dagster integration package, exceeding enterprise standards across all critical dimensions.
 
@@ -46,6 +46,7 @@ pip install dagster-kafka
 - **JSON Support**: Native JSON message consumption from Kafka topics
 - **Avro Support**: Full Avro message support with Schema Registry integration  
 - **Protobuf Support**: Complete Protocol Buffers integration with schema management
+- **Dagster Components**: YAML-based configuration for teams without Python expertise 🆕
 - **Dead Letter Queue (DLQ)**: Enterprise-grade error handling with circuit breaker patterns
 - **Enterprise Security**: Complete SASL/SSL authentication and encryption support
 - **Schema Evolution**: Comprehensive validation with breaking change detection across all formats
@@ -88,7 +89,7 @@ dlq-dashboard --topics user-events_dlq,orders_dlq
 ```
 PASS Extended Stability: 5+ minutes, 137/137 successful materializations
 PASS Resource Management: 15 cycles, no memory leaks detected  
-PASS Concurrent Usage: 8 threads � 15 operations = 100% success
+PASS Concurrent Usage: 8 threads × 15 operations = 100% success
 PASS Comprehensive Stress: 8+ minutes, 305 operations, EXCEPTIONAL rating
 ```
 
@@ -111,6 +112,65 @@ PASS Comprehensive Stress: 8+ minutes, 305 operations, EXCEPTIONAL rating
 **Configuration Injection Protection**: Prevents malicious configuration attacks  
 **Credential Security**: No credential exposure in logs or error messages  
 **Network Security**: Complete SSL/TLS and SASL protocol support  
+
+## Dagster Components Support 🆕
+
+**NEW**: YAML-based configuration for teams without Python expertise!
+
+### Simple YAML Configuration
+Transform complex Python setup into simple YAML configuration:
+
+```yaml
+# Configure Kafka assets with just a few lines of YAML
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "localhost:9092"
+    security_protocol: "PLAINTEXT"
+  consumer_config:
+    consumer_group_id: "my-pipeline"
+    max_messages: 500
+    enable_dlq: true
+  topics:
+    - name: "user-events"
+      format: "json"
+    - name: "orders"
+      format: "avro"
+      schema_registry_url: "http://localhost:8081"
+```
+
+### Production YAML Configuration
+```yaml
+# Production-ready configuration with security
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('KAFKA_BOOTSTRAP_SERVERS') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('KAFKA_USERNAME') }}"
+    sasl_password: "{{ env('KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/certs/kafka-ca.pem"
+  consumer_config:
+    consumer_group_id: "production-pipeline"
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"
+  topics:
+    - name: "critical-events"
+      format: "json"
+    - name: "transaction-data"
+      format: "protobuf"
+      schema_registry_url: "{{ env('SCHEMA_REGISTRY_URL') }}"
+```
+
+### Components vs Python API
+
+| Approach | Lines of Code | Python Knowledge Required | Team Accessibility |
+|----------|---------------|---------------------------|-------------------|
+| **Python API** | 30-50 lines | Advanced | Developers only |
+| **YAML Components** | 5-10 lines | None | Everyone |
+
+**Same powerful features, 90% less code!**
 
 ## Quick Start Examples
 
@@ -299,13 +359,14 @@ docker-compose up -d
 
 ```
 examples/
-+-- json_examples/              # JSON message examples
-+-- avro_examples/              # Avro schema examples  
-+-- protobuf_examples/          # Protobuf examples
-+-- dlq_examples/               # Complete DLQ tooling suite
-+-- security_examples/          # Enterprise security examples
-+-- performance_examples/       # Performance optimization
-+-- production_examples/        # Enterprise deployment patterns
+├── json_examples/              # JSON message examples
+├── avro_examples/              # Avro schema examples  
+├── protobuf_examples/          # Protobuf examples
+├── components_examples/        # YAML Components configuration 🆕
+├── dlq_examples/               # Complete DLQ tooling suite
+├── security_examples/          # Enterprise security examples
+├── performance_examples/       # Performance optimization
+└── production_examples/        # Enterprise deployment patterns
 ```
 
 ## Why Choose This Integration
@@ -318,6 +379,8 @@ examples/
 - **Complete DLQ Tooling Suite** for enterprise operations
 
 ### Developer Experience
+- **Multiple configuration options** - Python API OR simple YAML Components 🆕
+- **Team accessibility** - Components enable non-Python users to configure Kafka assets
 - **Familiar Dagster patterns** - feels native to the platform
 - **Comprehensive examples** for all use cases including security and DLQ
 - **Extensive documentation** and testing
@@ -340,10 +403,11 @@ examples/
 
 ## Roadmap
 
-### Completed Features (v1.1.0)
+### Completed Features (v1.1.2)
 - **JSON Support** - Complete native integration
 - **Avro Support** - Full Schema Registry + evolution validation
 - **Protobuf Support** - Complete Protocol Buffers integration
+- **Dagster Components** - YAML-based configuration support 🆕
 - **Enterprise Security** - Complete SASL/SSL authentication and encryption
 - **Schema Evolution** - All compatibility levels across formats
 - **Production Monitoring** - Real-time alerting and metrics
@@ -351,7 +415,7 @@ examples/
 - **Dead Letter Queues** - Advanced error handling with circuit breaker
 - **Complete DLQ Tooling Suite** - Inspector, Replayer, Monitoring, Alerting
 - **Comprehensive Testing** - 11-phase enterprise validation
-- **PyPI Distribution** - ? LIVE: Official package published and validated
+- **PyPI Distribution** - ✅ LIVE: Official package published and validated
 - **Security Hardening** - Configuration injection protection
 
 ### Upcoming Features
@@ -393,8 +457,8 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## The Complete Enterprise Solution
 
-**The most comprehensively validated Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, and complete operational tooling suite.
+**The most comprehensively validated Kafka integration for Dagster** - supporting all three major serialization formats (JSON, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, YAML-based Components, and complete operational tooling suite.
 
-**Version 1.1.2** - Enterprise Validation Release with Security Hardening
+**Version 1.1.2** - Enterprise Validation Release with Components Support
 
 *Built by [Kingsley Okonkwo](https://github.com/kingsley-123) - Solving real data engineering problems with comprehensive open source solutions.*

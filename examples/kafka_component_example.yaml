@@ -1,0 +1,64 @@
+# Example: Kafka Component Configuration
+# This shows how teams can configure Kafka assets via YAML instead of Python
+
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "localhost:9092"
+    security_protocol: "PLAINTEXT"
+    # For production, use environment variables:
+    # bootstrap_servers: "{{ env('KAFKA_BOOTSTRAP_SERVERS') }}"
+    # security_protocol: "SASL_SSL"
+    # sasl_mechanism: "SCRAM_SHA_256"
+    # sasl_username: "{{ env('KAFKA_USERNAME') }}"
+    # sasl_password: "{{ env('KAFKA_PASSWORD') }}"
+    
+  consumer_config:
+    consumer_group_id: "my-dagster-pipeline"
+    max_messages: 500
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"
+    dlq_max_retries: 3
+    
+  topics:
+    # JSON topic for user events
+    - name: "user-events"
+      format: "json"
+      asset_key: "user_events"
+      
+    # Avro topic for order data
+    - name: "orders"
+      format: "avro"
+      schema_registry_url: "http://localhost:8081"
+      asset_key: "orders_data"
+      
+    # Protobuf topic for metrics
+    - name: "system-metrics"
+      format: "protobuf"
+      schema_registry_url: "http://localhost:8081"
+      asset_key: "system_metrics"
+
+---
+# Example: Production Configuration with Security
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('KAFKA_BOOTSTRAP_SERVERS') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('KAFKA_USERNAME') }}"
+    sasl_password: "{{ env('KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/certs/kafka-ca.pem"
+    ssl_check_hostname: true
+    
+  consumer_config:
+    consumer_group_id: "production-pipeline"
+    max_messages: 1000
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"
+    dlq_max_retries: 5
+    
+  topics:
+    - name: "production-events"
+      format: "json"
+      asset_key: "prod_events"

@@ -10,6 +10,7 @@ Provides Kafka integration for Dagster data pipelines with support for:
 - High-performance caching, batching, and connection pooling
 - Configurable consumer groups and connection settings
 - Dead Letter Queue (DLQ) support for enterprise error handling
+- Dagster Components for YAML-based configuration
 """
 
 from .resources import KafkaResource
@@ -43,6 +44,7 @@ from .performance import (
     BatchStrategy,
     PerformanceMetrics
 )
+from .component import KafkaComponent, KafkaConfig, ConsumerConfig, TopicConfig
 
 __version__ = "1.1.2"
 
@@ -50,7 +52,7 @@ __all__ = [
     "KafkaResource",
     "SecurityProtocol",
     "SaslMechanism",
-    "KafkaIOManager", 
+    "KafkaIOManager",
     "AvroKafkaIOManager",
     "avro_kafka_io_manager",
     "ProtobufKafkaIOManager",
@@ -83,4 +85,8 @@ __all__ = [
     "CacheStrategy",
     "BatchStrategy",
     "PerformanceMetrics",
+    "KafkaComponent",
+    "KafkaConfig", 
+    "ConsumerConfig",
+    "TopicConfig",
 ]
