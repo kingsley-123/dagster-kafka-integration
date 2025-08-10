@@ -1,0 +1,256 @@
+# Advanced Microservices Event-Driven Architecture
+# Demonstrates complex patterns: Event Sourcing, CQRS, Sagas, Domain Events
+
+# 1. USER SERVICE - Event Sourcing Pattern
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('USER_SERVICE_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('USER_SERVICE_KAFKA_USER') }}"
+    sasl_password: "{{ env('USER_SERVICE_KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/user-service/kafka-ca.pem"
+    
+  consumer_config:
+    consumer_group_id: "user-service-event-store"
+    max_messages: 1000
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"  # Critical user data needs retries
+    dlq_max_retries: 5
+    
+  topics:
+    # Event Sourcing - All user domain events
+    - name: "user-domain-events"
+      format: "avro"  # Schema evolution for event versioning
+      schema_registry_url: "{{ env('USER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "user_event_store"
+      
+    # User Command Events
+    - name: "user-commands"
+      format: "avro"
+      schema_registry_url: "{{ env('USER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "user_commands"
+      
+    # User State Snapshots (CQRS Read Model)
+    - name: "user-state-snapshots"
+      format: "avro"
+      schema_registry_url: "{{ env('USER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "user_read_models"
+
+---
+# 2. ORDER SERVICE - Saga Pattern for Distributed Transactions
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('ORDER_SERVICE_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"  # Higher security for financial data
+    sasl_username: "{{ env('ORDER_SERVICE_KAFKA_USER') }}"
+    sasl_password: "{{ env('ORDER_SERVICE_KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/order-service/kafka-ca.pem"
+    session_timeout_ms: 60000  # Longer timeout for complex transactions
+    
+  consumer_config:
+    consumer_group_id: "order-service-saga-coordinator"
+    max_messages: 2000
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"  # Fail fast for financial transactions
+    dlq_max_retries: 3
+    
+  topics:
+    # Saga Orchestration Events
+    - name: "order-saga-events"
+      format: "avro"
+      schema_registry_url: "{{ env('ORDER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "order_saga_coordination"
+      
+    # Order Domain Events
+    - name: "order-domain-events"
+      format: "avro"
+      schema_registry_url: "{{ env('ORDER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "order_events"
+      
+    # Payment Integration Events
+    - name: "payment-integration-events"
+      format: "protobuf"  # High performance for payment processing
+      schema_registry_url: "{{ env('ORDER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "payment_events"
+      
+    # Inventory Reservation Events
+    - name: "inventory-reservation-events"
+      format: "avro"
+      schema_registry_url: "{{ env('ORDER_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "inventory_reservations"
+
+---
+# 3. NOTIFICATION SERVICE - High-Throughput Fan-Out Pattern
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('NOTIFICATION_SERVICE_KAFKA') }}"
+    security_protocol: "SASL_PLAINTEXT"  # Less security for notifications
+    sasl_mechanism: "PLAIN"
+    sasl_username: "{{ env('NOTIFICATION_SERVICE_USER') }}"
+    sasl_password: "{{ env('NOTIFICATION_SERVICE_PASSWORD') }}"
+    
+  consumer_config:
+    consumer_group_id: "notification-service-dispatcher"
+    max_messages: 5000  # High throughput for notifications
+    enable_dlq: true
+    dlq_strategy: "IMMEDIATE"  # Don't retry notifications - send to DLQ immediately
+    dlq_max_retries: 1
+    
+  topics:
+    # Email Notification Queue
+    - name: "email-notifications"
+      format: "json"  # Simple format for notifications
+      asset_key: "email_queue"
+      
+    # SMS Notification Queue
+    - name: "sms-notifications"
+      format: "json"
+      asset_key: "sms_queue"
+      
+    # Push Notification Queue
+    - name: "push-notifications"
+      format: "json"
+      asset_key: "push_queue"
+      
+    # Marketing Campaign Events
+    - name: "marketing-campaign-events"
+      format: "avro"
+      schema_registry_url: "{{ env('NOTIFICATION_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "marketing_campaigns"
+
+---
+# 4. ANALYTICS SERVICE - Real-Time Stream Processing
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('ANALYTICS_KAFKA_CLUSTER') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('ANALYTICS_KAFKA_USER') }}"
+    sasl_password: "{{ env('ANALYTICS_KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/analytics/kafka-ca.pem"
+    enable_auto_commit: false  # Manual commit for stream processing
+    
+  consumer_config:
+    consumer_group_id: "analytics-stream-processor"
+    max_messages: 10000  # Maximum throughput
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"
+    dlq_max_retries: 2  # Quick failure for real-time analytics
+    
+  topics:
+    # Clickstream Analytics
+    - name: "web-clickstream"
+      format: "protobuf"  # Compact for high-volume clickstream
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "web_analytics"
+      
+    # Mobile App Analytics
+    - name: "mobile-app-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "mobile_analytics"
+      
+    # Business Metrics Aggregations
+    - name: "business-metrics"
+      format: "avro"
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "business_kpis"
+      
+    # Customer Journey Events
+    - name: "customer-journey-events"
+      format: "avro"
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "customer_journeys"
+
+---
+# 5. FRAUD DETECTION SERVICE - Critical Real-Time Processing
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('FRAUD_DETECTION_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"  # Maximum security for fraud detection
+    sasl_username: "{{ env('FRAUD_DETECTION_USER') }}"
+    sasl_password: "{{ env('FRAUD_DETECTION_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/fraud-detection/kafka-ca.pem"
+    ssl_check_hostname: true
+    session_timeout_ms: 15000  # Quick timeout for fraud detection
+    
+  consumer_config:
+    consumer_group_id: "fraud-detection-engine"
+    max_messages: 500  # Smaller batches for low latency
+    enable_dlq: true
+    dlq_strategy: "IMMEDIATE"  # No retries - fraud detection is time-sensitive
+    dlq_max_retries: 0
+    
+  topics:
+    # Transaction Risk Scoring
+    - name: "transaction-risk-events"
+      format: "protobuf"  # Fast serialization for real-time fraud detection
+      schema_registry_url: "{{ env('FRAUD_DETECTION_SCHEMA_REGISTRY') }}"
+      asset_key: "transaction_risk_scores"
+      
+    # Fraud Alerts
+    - name: "fraud-alerts"
+      format: "avro"
+      schema_registry_url: "{{ env('FRAUD_DETECTION_SCHEMA_REGISTRY') }}"
+      asset_key: "fraud_alerts"
+      
+    # User Behavior Anomalies
+    - name: "behavior-anomalies"
+      format: "protobuf"
+      schema_registry_url: "{{ env('FRAUD_DETECTION_SCHEMA_REGISTRY') }}"
+      asset_key: "behavior_anomalies"
+
+---
+# 6. AUDIT SERVICE - Compliance and Regulatory Events
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('AUDIT_SERVICE_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('AUDIT_SERVICE_USER') }}"
+    sasl_password: "{{ env('AUDIT_SERVICE_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/audit/kafka-ca.pem"
+    ssl_certificate_location: "/etc/ssl/audit/audit-client.pem"
+    ssl_key_location: "/etc/ssl/audit/audit-client-key.pem"
+    ssl_check_hostname: true
+    enable_auto_commit: false  # Manual commit for audit trail integrity
+    
+  consumer_config:
+    consumer_group_id: "audit-trail-processor"
+    max_messages: 1000
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"  # Must not lose audit events
+    dlq_max_retries: 10  # Maximum retries for compliance
+    
+  topics:
+    # Regulatory Compliance Events
+    - name: "compliance-events"
+      format: "avro"  # Schema evolution for changing regulations
+      schema_registry_url: "{{ env('AUDIT_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "compliance_audit_trail"
+      
+    # Security Events
+    - name: "security-audit-events"
+      format: "avro"
+      schema_registry_url: "{{ env('AUDIT_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "security_audit_trail"
+      
+    # Data Access Logs
+    - name: "data-access-logs"
+      format: "json"  # Human-readable for audit reviews
+      asset_key: "data_access_audit"
+      
+    # GDPR and Privacy Events
+    - name: "privacy-compliance-events"
+      format: "avro"
+      schema_registry_url: "{{ env('AUDIT_SERVICE_SCHEMA_REGISTRY') }}"
+      asset_key: "privacy_compliance_audit"

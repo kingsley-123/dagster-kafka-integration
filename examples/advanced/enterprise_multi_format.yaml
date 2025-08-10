@@ -1,0 +1,135 @@
+# Enterprise Multi-Format Kafka Configuration
+# Demonstrates all three message formats with enterprise security and advanced DLQ
+
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    # Production Kafka cluster with high availability
+    bootstrap_servers: "{{ env('KAFKA_BOOTSTRAP_SERVERS') }}"  # "kafka-01:9092,kafka-02:9092,kafka-03:9092"
+    
+    # Enterprise Security Configuration
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('KAFKA_USERNAME') }}"
+    sasl_password: "{{ env('KAFKA_PASSWORD') }}"
+    
+    # SSL Certificate Configuration
+    ssl_ca_location: "/etc/ssl/certs/kafka-ca.pem"
+    ssl_certificate_location: "/etc/ssl/certs/kafka-client.pem"
+    ssl_key_location: "/etc/ssl/private/kafka-client-key.pem"
+    ssl_check_hostname: true
+    
+    # Advanced Connection Settings
+    session_timeout_ms: 30000
+    enable_auto_commit: false
+    auto_offset_reset: "earliest"
+    
+  consumer_config:
+    consumer_group_id: "enterprise-data-pipeline"
+    max_messages: 5000
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"
+    dlq_max_retries: 5
+    
+  topics:
+    # 1. High-Volume JSON Events (User Activity)
+    - name: "user-activity-events"
+      format: "json"
+      asset_key: "user_activity"
+      
+    # 2. Financial Transactions (Avro for Schema Evolution)
+    - name: "financial-transactions"
+      format: "avro"
+      schema_registry_url: "{{ env('SCHEMA_REGISTRY_URL') }}"
+      asset_key: "financial_transactions"
+      
+    # 3. IoT Sensor Data (Protobuf for Compact Binary)
+    - name: "iot-sensor-metrics"
+      format: "protobuf"
+      schema_registry_url: "{{ env('SCHEMA_REGISTRY_URL') }}"
+      asset_key: "iot_metrics"
+      
+    # 4. Customer Events (JSON with Custom Asset Key)
+    - name: "customer-lifecycle-events"
+      format: "json"
+      asset_key: "customer_lifecycle"
+      
+    # 5. Order Processing (Avro for Critical Business Data)
+    - name: "order-processing-events"
+      format: "avro"
+      schema_registry_url: "{{ env('SCHEMA_REGISTRY_URL') }}"
+      asset_key: "order_processing"
+      
+    # 6. System Metrics (Protobuf for High Frequency)
+    - name: "system-performance-metrics"
+      format: "protobuf"
+      schema_registry_url: "{{ env('SCHEMA_REGISTRY_URL') }}"
+      asset_key: "system_performance"
+
+---
+# Development Environment Configuration
+# Simpler setup for local development and testing
+
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "localhost:9092"
+    security_protocol: "PLAINTEXT"  # No security for local dev
+    
+  consumer_config:
+    consumer_group_id: "dev-pipeline"
+    max_messages: 100
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"
+    dlq_max_retries: 3
+    
+  topics:
+    # Development versions of production topics
+    - name: "dev-user-events"
+      format: "json"
+      asset_key: "dev_user_events"
+      
+    - name: "dev-transactions"
+      format: "avro"
+      schema_registry_url: "http://localhost:8081"
+      asset_key: "dev_transactions"
+
+---
+# High-Throughput Real-Time Analytics Configuration
+# Optimized for maximum performance and minimal latency
+
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('ANALYTICS_KAFKA_CLUSTER') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"  # Higher security for analytics
+    sasl_username: "{{ env('ANALYTICS_KAFKA_USER') }}"
+    sasl_password: "{{ env('ANALYTICS_KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/certs/analytics-kafka-ca.pem"
+    session_timeout_ms: 45000  # Longer timeout for stability
+    
+  consumer_config:
+    consumer_group_id: "real-time-analytics"
+    max_messages: 10000  # High throughput
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"  # Fail fast for real-time
+    dlq_max_retries: 2  # Quick failure for real-time processing
+    
+  topics:
+    # Real-time clickstream data
+    - name: "clickstream-events"
+      format: "json"
+      asset_key: "clickstream_analytics"
+      
+    # Ad impression data (high volume)
+    - name: "ad-impressions"
+      format: "protobuf"  # Compact for high volume
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "ad_impressions"
+      
+    # User behavior patterns
+    - name: "user-behavior-patterns"
+      format: "avro"
+      schema_registry_url: "{{ env('ANALYTICS_SCHEMA_REGISTRY') }}"
+      asset_key: "behavior_patterns"

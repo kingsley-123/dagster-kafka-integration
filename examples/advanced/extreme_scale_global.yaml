@@ -1,0 +1,304 @@
+# EXTREME SCALE GLOBAL INFRASTRUCTURE
+# Multi-Region, Multi-Cloud, Extreme High-Throughput Kafka Configuration
+# Processing millions of events per second across global infrastructure
+
+# ==================== REGION: US-EAST (PRIMARY) ====================
+# Ultra High-Throughput Trading Platform
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    # Multi-broker cluster for maximum availability
+    bootstrap_servers: "{{ env('US_EAST_KAFKA_BROKERS') }}"  # 15+ brokers
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('US_EAST_TRADING_USER') }}"
+    sasl_password: "{{ env('US_EAST_TRADING_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/us-east/kafka-ca.pem"
+    ssl_certificate_location: "/etc/ssl/us-east/trading-client.pem"
+    ssl_key_location: "/etc/ssl/us-east/trading-client-key.pem"
+    session_timeout_ms: 5000  # Ultra-low latency for trading
+    enable_auto_commit: false  # Manual control for trading precision
+    
+  consumer_config:
+    consumer_group_id: "us-east-trading-engine"
+    max_messages: 50000  # EXTREME throughput
+    enable_dlq: true
+    dlq_strategy: "IMMEDIATE"  # No retries in trading - time is money
+    dlq_max_retries: 0
+    
+  topics:
+    # Market Data Feed (50M+ messages/day)
+    - name: "market-data-level2"
+      format: "protobuf"  # Maximum compression for market data
+      schema_registry_url: "{{ env('US_EAST_SCHEMA_REGISTRY') }}"
+      asset_key: "market_data_ultra_high_freq"
+      
+    # Trade Executions (10M+ trades/day)
+    - name: "trade-executions"
+      format: "protobuf"
+      schema_registry_url: "{{ env('US_EAST_SCHEMA_REGISTRY') }}"
+      asset_key: "trade_executions"
+      
+    # Options Chain Data (100M+ updates/day)
+    - name: "options-chain-updates"
+      format: "protobuf"
+      schema_registry_url: "{{ env('US_EAST_SCHEMA_REGISTRY') }}"
+      asset_key: "options_chain_data"
+      
+    # Risk Management Alerts
+    - name: "risk-management-alerts"
+      format: "avro"
+      schema_registry_url: "{{ env('US_EAST_SCHEMA_REGISTRY') }}"
+      asset_key: "risk_alerts"
+
+---
+# ==================== REGION: EU-WEST (GDPR COMPLIANT) ====================
+# European Data Processing with Privacy Compliance
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('EU_WEST_KAFKA_BROKERS') }}"  # 12+ brokers
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('EU_WEST_COMPLIANCE_USER') }}"
+    sasl_password: "{{ env('EU_WEST_COMPLIANCE_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/eu-west/gdpr-kafka-ca.pem"
+    ssl_certificate_location: "/etc/ssl/eu-west/gdpr-client.pem"
+    ssl_key_location: "/etc/ssl/eu-west/gdpr-client-key.pem"
+    ssl_check_hostname: true
+    session_timeout_ms: 45000  # Stable for compliance processing
+    
+  consumer_config:
+    consumer_group_id: "eu-west-compliance-processor"
+    max_messages: 25000  # High throughput with compliance checks
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"  # Must process all compliance data
+    dlq_max_retries: 8  # Extra retries for regulatory compliance
+    
+  topics:
+    # GDPR Data Subject Requests (10M+ requests/month)
+    - name: "gdpr-data-subject-requests"
+      format: "avro"  # Schema evolution for changing regulations
+      schema_registry_url: "{{ env('EU_WEST_SCHEMA_REGISTRY') }}"
+      asset_key: "gdpr_data_requests"
+      
+    # Privacy Compliance Events
+    - name: "privacy-compliance-events"
+      format: "avro"
+      schema_registry_url: "{{ env('EU_WEST_SCHEMA_REGISTRY') }}"
+      asset_key: "privacy_compliance"
+      
+    # Data Retention Events (1B+ records tracked)
+    - name: "data-retention-events"
+      format: "avro"
+      schema_registry_url: "{{ env('EU_WEST_SCHEMA_REGISTRY') }}"
+      asset_key: "data_retention_tracking"
+      
+    # Cross-Border Data Transfer Logs
+    - name: "cross-border-transfer-logs"
+      format: "json"  # Human readable for audits
+      asset_key: "cross_border_transfers"
+
+---
+# ==================== REGION: ASIA-PACIFIC (ULTRA HIGH SCALE) ====================
+# IoT and Mobile Gaming Platform - Extreme Scale
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('APAC_KAFKA_CLUSTER') }}"  # 20+ brokers
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_256"
+    sasl_username: "{{ env('APAC_IOT_USER') }}"
+    sasl_password: "{{ env('APAC_IOT_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/apac/iot-kafka-ca.pem"
+    session_timeout_ms: 30000
+    enable_auto_commit: true  # Auto-commit for high throughput IoT
+    
+  consumer_config:
+    consumer_group_id: "apac-iot-massive-scale"
+    max_messages: 100000  # MAXIMUM EXTREME throughput
+    enable_dlq: true
+    dlq_strategy: "CIRCUIT_BREAKER"  # Fast failure for real-time IoT
+    dlq_max_retries: 1
+    
+  topics:
+    # IoT Sensor Network (1B+ messages/day)
+    - name: "iot-sensor-telemetry"
+      format: "protobuf"  # Compact for massive IoT scale
+      schema_registry_url: "{{ env('APAC_SCHEMA_REGISTRY') }}"
+      asset_key: "iot_telemetry_massive"
+      
+    # Mobile Game Events (500M+ events/day)
+    - name: "mobile-game-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('APAC_SCHEMA_REGISTRY') }}"
+      asset_key: "mobile_gaming_events"
+      
+    # Smart City Infrastructure (100M+ events/day)
+    - name: "smart-city-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('APAC_SCHEMA_REGISTRY') }}"
+      asset_key: "smart_city_infrastructure"
+      
+    # Industrial IoT Manufacturing (50M+ events/day)
+    - name: "industrial-iot-manufacturing"
+      format: "protobuf"
+      schema_registry_url: "{{ env('APAC_SCHEMA_REGISTRY') }}"
+      asset_key: "industrial_manufacturing"
+      
+    # Autonomous Vehicle Telemetry (200M+ events/day)
+    - name: "autonomous-vehicle-telemetry"
+      format: "protobuf"
+      schema_registry_url: "{{ env('APAC_SCHEMA_REGISTRY') }}"
+      asset_key: "autonomous_vehicles"
+
+---
+# ==================== MULTI-CLOUD DISASTER RECOVERY ====================
+# Cross-Cloud Replication and Disaster Recovery
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    # Multi-cloud setup (AWS + Azure + GCP)
+    bootstrap_servers: "{{ env('DISASTER_RECOVERY_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('DR_KAFKA_USER') }}"
+    sasl_password: "{{ env('DR_KAFKA_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/disaster-recovery/multi-cloud-ca.pem"
+    ssl_certificate_location: "/etc/ssl/disaster-recovery/dr-client.pem"
+    ssl_key_location: "/etc/ssl/disaster-recovery/dr-client-key.pem"
+    session_timeout_ms: 60000  # Longer timeout for cross-cloud stability
+    
+  consumer_config:
+    consumer_group_id: "disaster-recovery-coordinator"
+    max_messages: 75000  # High throughput for DR replication
+    enable_dlq: true
+    dlq_strategy: "RETRY_THEN_DLQ"  # Must not lose DR data
+    dlq_max_retries: 15  # Maximum retries for disaster recovery
+    
+  topics:
+    # Cross-Region Replication Events
+    - name: "cross-region-replication"
+      format: "avro"
+      schema_registry_url: "{{ env('DR_SCHEMA_REGISTRY') }}"
+      asset_key: "cross_region_replication"
+      
+    # Backup Verification Events
+    - name: "backup-verification-events"
+      format: "avro"
+      schema_registry_url: "{{ env('DR_SCHEMA_REGISTRY') }}"
+      asset_key: "backup_verification"
+      
+    # Recovery Coordination Events
+    - name: "recovery-coordination-events"
+      format: "json"  # Human readable for emergency scenarios
+      asset_key: "recovery_coordination"
+
+---
+# ==================== REAL-TIME ML INFERENCE PIPELINE ====================
+# Machine Learning Model Serving at Extreme Scale
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('ML_INFERENCE_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('ML_INFERENCE_USER') }}"
+    sasl_password: "{{ env('ML_INFERENCE_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/ml-inference/kafka-ca.pem"
+    session_timeout_ms: 10000  # Low latency for ML inference
+    enable_auto_commit: false  # Precise control for ML pipelines
+    
+  consumer_config:
+    consumer_group_id: "ml-inference-pipeline"
+    max_messages: 80000  # Extreme throughput for ML inference
+    enable_dlq: true
+    dlq_strategy: "IMMEDIATE"  # No retries - ML inference is time-sensitive
+    dlq_max_retries: 0
+    
+  topics:
+    # Real-Time Feature Store (1B+ features/day)
+    - name: "ml-feature-store-updates"
+      format: "protobuf"  # Fast serialization for ML features
+      schema_registry_url: "{{ env('ML_SCHEMA_REGISTRY') }}"
+      asset_key: "ml_feature_store"
+      
+    # Model Inference Requests (500M+ inferences/day)
+    - name: "ml-inference-requests"
+      format: "protobuf"
+      schema_registry_url: "{{ env('ML_SCHEMA_REGISTRY') }}"
+      asset_key: "ml_inference_requests"
+      
+    # Model Performance Metrics
+    - name: "ml-model-performance"
+      format: "avro"
+      schema_registry_url: "{{ env('ML_SCHEMA_REGISTRY') }}"
+      asset_key: "ml_model_metrics"
+      
+    # A/B Testing Results (100M+ experiments/day)
+    - name: "ab-testing-results"
+      format: "protobuf"
+      schema_registry_url: "{{ env('ML_SCHEMA_REGISTRY') }}"
+      asset_key: "ab_testing_results"
+      
+    # Real-Time Personalization Events (2B+ events/day)
+    - name: "personalization-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('ML_SCHEMA_REGISTRY') }}"
+      asset_key: "personalization_engine"
+
+---
+# ==================== BLOCKCHAIN AND CRYPTO TRADING ====================
+# Cryptocurrency Trading and Blockchain Event Processing
+type: dagster_kafka.KafkaComponent
+attributes:
+  kafka_config:
+    bootstrap_servers: "{{ env('CRYPTO_TRADING_KAFKA') }}"
+    security_protocol: "SASL_SSL"
+    sasl_mechanism: "SCRAM_SHA_512"
+    sasl_username: "{{ env('CRYPTO_TRADING_USER') }}"
+    sasl_password: "{{ env('CRYPTO_TRADING_PASSWORD') }}"
+    ssl_ca_location: "/etc/ssl/crypto/trading-ca.pem"
+    ssl_certificate_location: "/etc/ssl/crypto/trading-client.pem"
+    ssl_key_location: "/etc/ssl/crypto/trading-client-key.pem"
+    session_timeout_ms: 3000  # Ultra-low latency for crypto trading
+    enable_auto_commit: false  # Precise control for trading
+    
+  consumer_config:
+    consumer_group_id: "crypto-trading-engine"
+    max_messages: 200000  # ULTIMATE EXTREME throughput
+    enable_dlq: true
+    dlq_strategy: "IMMEDIATE"  # No retries in crypto trading
+    dlq_max_retries: 0
+    
+  topics:
+    # Cryptocurrency Market Data (10B+ ticks/day)
+    - name: "crypto-market-data-feed"
+      format: "protobuf"  # Maximum efficiency for market data
+      schema_registry_url: "{{ env('CRYPTO_SCHEMA_REGISTRY') }}"
+      asset_key: "crypto_market_data_extreme"
+      
+    # Blockchain Transaction Events (50M+ transactions/day)
+    - name: "blockchain-transaction-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('CRYPTO_SCHEMA_REGISTRY') }}"
+      asset_key: "blockchain_transactions"
+      
+    # DeFi Protocol Events (100M+ events/day)
+    - name: "defi-protocol-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('CRYPTO_SCHEMA_REGISTRY') }}"
+      asset_key: "defi_protocol_events"
+      
+    # NFT Trading Events (10M+ trades/day)
+    - name: "nft-trading-events"
+      format: "avro"
+      schema_registry_url: "{{ env('CRYPTO_SCHEMA_REGISTRY') }}"
+      asset_key: "nft_trading"
+      
+    # Cross-Chain Bridge Events
+    - name: "cross-chain-bridge-events"
+      format: "protobuf"
+      schema_registry_url: "{{ env('CRYPTO_SCHEMA_REGISTRY') }}"
+      asset_key: "cross_chain_bridges"
+

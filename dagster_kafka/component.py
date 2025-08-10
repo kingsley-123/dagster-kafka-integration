@@ -19,7 +19,13 @@ class KafkaConfig:
     sasl_username: Optional[str] = None
     sasl_password: Optional[str] = None
     ssl_ca_location: Optional[str] = None
+    ssl_certificate_location: Optional[str] = None
+    ssl_key_location: Optional[str] = None
+    ssl_key_password: Optional[str] = None
     ssl_check_hostname: bool = True
+    session_timeout_ms: int = 10000
+    enable_auto_commit: bool = True
+    auto_offset_reset: str = "earliest"
 
 
 @dataclass
@@ -30,6 +36,7 @@ class ConsumerConfig:
     enable_dlq: bool = True
     dlq_strategy: str = "RETRY_THEN_DLQ"
     dlq_max_retries: int = 3
+    dlq_circuit_breaker_failure_threshold: int = 5
 
 
 @dataclass 
@@ -38,6 +45,7 @@ class TopicConfig:
     name: str
     format: str  # "json", "avro", or "protobuf"
     schema_registry_url: Optional[str] = None
+    schema_file: Optional[str] = None
     asset_key: Optional[str] = None
 
 
@@ -47,6 +55,7 @@ class KafkaComponent(dg.Component):
     A Dagster Component for Kafka integration.
     
     Allows teams to configure Kafka assets via YAML instead of Python code.
+    Supports JSON, Avro, and Protobuf message formats with enterprise features.
     """
     
     kafka_config: KafkaConfig
@@ -60,11 +69,17 @@ class KafkaComponent(dg.Component):
         kafka_resource = KafkaResource(
             bootstrap_servers=self.kafka_config.bootstrap_servers,
             security_protocol=SecurityProtocol(self.kafka_config.security_protocol),
-            sasl_mechanism=SaslMechanism(self.kafka_config.sasl_mechanism) if self.kafka_config.sasl_mechanism else None,
+            sasl_mechanism=getattr(SaslMechanism, self.kafka_config.sasl_mechanism) if self.kafka_config.sasl_mechanism else None,
             sasl_username=self.kafka_config.sasl_username,
             sasl_password=self.kafka_config.sasl_password,
             ssl_ca_location=self.kafka_config.ssl_ca_location,
+            ssl_certificate_location=self.kafka_config.ssl_certificate_location,
+            ssl_key_location=self.kafka_config.ssl_key_location,
+            ssl_key_password=self.kafka_config.ssl_key_password,
             ssl_check_hostname=self.kafka_config.ssl_check_hostname,
+            session_timeout_ms=self.kafka_config.session_timeout_ms,
+            enable_auto_commit=self.kafka_config.enable_auto_commit,
+            auto_offset_reset=self.kafka_config.auto_offset_reset,
         )
         
         assets = []
@@ -81,8 +96,9 @@ class KafkaComponent(dg.Component):
                     consumer_group_id=self.consumer_config.consumer_group_id,
                     max_messages=self.consumer_config.max_messages,
                     enable_dlq=self.consumer_config.enable_dlq,
-                    dlq_strategy=DLQStrategy(self.consumer_config.dlq_strategy),
+                    dlq_strategy=getattr(DLQStrategy, self.consumer_config.dlq_strategy),
                     dlq_max_retries=self.consumer_config.dlq_max_retries,
+                    dlq_circuit_breaker_failure_threshold=self.consumer_config.dlq_circuit_breaker_failure_threshold,
                 )
                 
                 resources[f"{asset_key}_io_manager"] = io_manager
@@ -111,10 +127,10 @@ class KafkaComponent(dg.Component):
                     kafka_resource=kafka_resource,
                     schema_registry_url=topic.schema_registry_url,
                     consumer_group_id=self.consumer_config.consumer_group_id,
-                    max_messages=self.consumer_config.max_messages,
                     enable_dlq=self.consumer_config.enable_dlq,
-                    dlq_strategy=DLQStrategy(self.consumer_config.dlq_strategy),
+                    dlq_strategy=getattr(DLQStrategy, self.consumer_config.dlq_strategy),
                     dlq_max_retries=self.consumer_config.dlq_max_retries,
+                    dlq_circuit_breaker_failure_threshold=self.consumer_config.dlq_circuit_breaker_failure_threshold,
                 )
                 
                 resources[f"{asset_key}_io_manager"] = io_manager
@@ -137,14 +153,13 @@ class KafkaComponent(dg.Component):
                 if not topic.schema_registry_url:
                     raise ValueError(f"schema_registry_url required for Protobuf topic: {topic.name}")
                 
-                # Create Protobuf IO Manager
+                # Create Protobuf IO Manager (without dlq_circuit_breaker_failure_threshold)
                 io_manager = create_protobuf_kafka_io_manager(
                     kafka_resource=kafka_resource,
                     schema_registry_url=topic.schema_registry_url,
                     consumer_group_id=self.consumer_config.consumer_group_id,
-                    max_messages=self.consumer_config.max_messages,
                     enable_dlq=self.consumer_config.enable_dlq,
-                    dlq_strategy=DLQStrategy(self.consumer_config.dlq_strategy),
+                    dlq_strategy=getattr(DLQStrategy, self.consumer_config.dlq_strategy),
                     dlq_max_retries=self.consumer_config.dlq_max_retries,
                 )
                 
@@ -163,6 +178,9 @@ class KafkaComponent(dg.Component):
                     return kafka_protobuf_asset
                 
                 assets.append(create_protobuf_asset())
+            
+            else:
+                raise ValueError(f"Unsupported format '{topic.format}' for topic: {topic.name}. Supported formats: json, avro, protobuf")
         
         return dg.Definitions(
             assets=assets,
