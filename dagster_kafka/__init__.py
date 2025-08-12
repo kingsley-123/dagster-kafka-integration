@@ -1,7 +1,7 @@
 """Dagster Kafka Integration Package
 
 Provides Kafka integration for Dagster data pipelines with support for:
-- JSON message consumption
+- JSON message consumption with optional schema validation
 - Avro message consumption with Schema Registry support
 - Protobuf message consumption with Schema Registry support
 - Schema evolution validation and compatibility checking
@@ -18,6 +18,7 @@ from .resources import SecurityProtocol, SaslMechanism
 from .io_manager import KafkaIOManager
 from .avro_io_manager import AvroKafkaIOManager, avro_kafka_io_manager
 from .protobuf_io_manager import ProtobufKafkaIOManager, protobuf_kafka_io_manager, ProtobufSchemaManager, create_protobuf_kafka_io_manager
+from .json_schema_io_manager import JSONSchemaKafkaIOManager, create_json_schema_kafka_io_manager
 from .schema_evolution import SchemaEvolutionValidator, CompatibilityLevel
 from .dlq import DLQStrategy, ErrorType, DLQConfiguration, DLQManager, create_dlq_manager, CircuitBreakerState
 from .production_utils import (
@@ -46,7 +47,7 @@ from .performance import (
 )
 from .component import KafkaComponent, KafkaConfig, ConsumerConfig, TopicConfig
 
-__version__ = "1.1.2"
+__version__ = "1.2.1"
 
 __all__ = [
     "KafkaResource",
@@ -59,6 +60,8 @@ __all__ = [
     "protobuf_kafka_io_manager",
     "ProtobufSchemaManager",
     "create_protobuf_kafka_io_manager",
+    "JSONSchemaKafkaIOManager",
+    "create_json_schema_kafka_io_manager",
     "SchemaEvolutionValidator",
     "CompatibilityLevel",
     "DLQStrategy",
