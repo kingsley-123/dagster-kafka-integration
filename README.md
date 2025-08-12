@@ -240,7 +240,7 @@ protobuf_manager = create_protobuf_kafka_io_manager(
 
 ### Comprehensive Enterprise Validation
 
-**Version 1.2.1** - Most validated Kafka integration package ever created:
+**Version 1.2.2** - Most validated Kafka integration package ever created:
 
 #### 11-Phase Enterprise Validation Completed
 - **EXCEPTIONAL Performance**: 1,199 messages/second peak throughput
@@ -610,6 +610,6 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 **The most comprehensively validated Kafka integration for Dagster** - supporting all four major serialization formats (JSON, JSON Schema, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, YAML-based Components, and complete operational tooling suite.
 
-**Version 1.2.1** - JSON Schema Validation Release
+**Version 1.2.2** - JSON Schema Validation Release
 
 *Built by [Kingsley Okonkwo](https://github.com/kingsley-123) - Solving real data engineering problems with comprehensive open source solutions.*

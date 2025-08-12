@@ -1,21 +1,20 @@
 from setuptools import setup, find_packages
 import pathlib
 
-# Read the contents of README file
+# Read README file
 HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text(encoding='utf-8')
 
 setup(
+    # Basic Information
     name="dagster-kafka",
-    version="1.2.1",
-    
-    # Author and maintainer information
+    version="1.2.2",
     author="Kingsley Okonkwo",
     author_email="kingskonk@gmail.com",
     maintainer="Kingsley Okonkwo",
     maintainer_email="kingskonk@gmail.com",
     
-    # Package description
+    # Description
     description="Enterprise-grade Kafka integration for Dagster with comprehensive serialization support, DLQ handling, and production monitoring",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -28,17 +27,13 @@ setup(
         "Repository": "https://github.com/kingsley-123/dagster-kafka-integration",
         "Bug Reports": "https://github.com/kingsley-123/dagster-kafka-integration/issues",
         "Source": "https://github.com/kingsley-123/dagster-kafka-integration",
-        "Changelog": "https://github.com/kingsley-123/dagster-kafka-integration/blob/main/CHANGELOG.md",
-        "Validation Report": "https://github.com/kingsley-123/dagster-kafka-integration/tree/main/validation",
         "PyPI": "https://pypi.org/project/dagster-kafka/",
     },
     
-    # Package configuration
+    # Package Configuration
     packages=find_packages(exclude=["tests*", "examples*", "docs*"]),
     include_package_data=True,
     zip_safe=False,
-    
-    # Python version requirement
     python_requires=">=3.9",
     
     # Dependencies
@@ -54,7 +49,7 @@ setup(
         "jsonschema>=4.0.0",
     ],
     
-    # Optional dependencies
+    # Optional Dependencies
     extras_require={
         "dev": [
             "pytest>=7.0.0",
@@ -75,7 +70,7 @@ setup(
         ]
     },
     
-    # Console scripts
+    # Console Scripts
     entry_points={
         "console_scripts": [
             "dlq-inspector=dagster_kafka.dlq_tools.dlq_inspector:main",
@@ -86,27 +81,18 @@ setup(
         ],
     },
     
-    # PyPI classifiers
+    # PyPI Classifiers
     classifiers=[
-        # Development status
         "Development Status :: 5 - Production/Stable",
-        
-        # Intended audience
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: System Administrators",
-        
-        # Topic
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: System :: Distributed Computing",
         "Topic :: System :: Monitoring",
         "Topic :: Database",
         "Topic :: Internet",
-        
-        # License
         "License :: OSI Approved :: Apache Software License",
-        
-        # Programming language
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9",
@@ -114,51 +100,30 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
-        
-        # Operating systems
         "Operating System :: OS Independent",
         "Operating System :: POSIX",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
-        
-        # Environment
         "Environment :: Console",
         "Environment :: No Input/Output (Daemon)",
-        
-        # Natural language
         "Natural Language :: English",
     ],
     
-    # Keywords for discoverability
+    # Keywords
     keywords=[
-        # Core technologies
         "dagster", "kafka", "apache-kafka", "streaming", 
-        
-        # Data engineering
         "data-engineering", "data-pipeline", "etl", "data-processing",
-        
-        # Serialization formats
         "json", "json-schema", "avro", "protobuf", "serialization",
-        
-        # Enterprise features
         "enterprise", "production", "monitoring", "alerting", "dlq", 
         "dead-letter-queue", "error-handling", "circuit-breaker",
-        
-        # Infrastructure
         "microservices", "distributed-systems", "real-time", 
         "schema-registry", "confluent", "data-validation",
-        
-        # Security
         "sasl", "ssl", "security", "authentication", "authorization",
     ],
     
-    # Package metadata
-    platforms=["any"],
-    
-    # License
+    # License and Metadata
     license="Apache-2.0",
     license_files=["LICENSE"],
-    
-    # Additional metadata
+    platforms=["any"],
     provides=["dagster_kafka"],
 )

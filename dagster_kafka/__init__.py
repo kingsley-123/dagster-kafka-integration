@@ -47,7 +47,7 @@ from .performance import (
 )
 from .component import KafkaComponent, KafkaConfig, ConsumerConfig, TopicConfig
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 __all__ = [
     "KafkaResource",
