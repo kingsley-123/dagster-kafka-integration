@@ -1,5 +1,3 @@
-I'll create an updated README.md that incorporates our new Confluent Connect integration while maintaining your existing structure and style. Let me prepare an artifact that you can easily copy and paste to update your GitHub README.md.
-
 <artifacts>
 <artifact type="text/markdown" title="Updated dagster-kafka README.md with Confluent Connect Integration">
 # Dagster Kafka Integration
@@ -11,16 +9,16 @@ I'll create an updated README.md that incorporates our new Confluent Connect int
 
 **The most comprehensively validated Kafka integration for Dagster** - Supporting all four major serialization formats with enterprise-grade features, complete security, operational tooling, and YAML-based Components.
 
-## 🚀 What's New in v1.3.0
+##  What's New in v1.3.0
 
-### ✨ Confluent Connect Integration (NEW)
+### Confluent Connect Integration (NEW)
 - **Complete Connect Management**: Native REST API integration for Kafka Connect
 - **Connector Assets**: Define Kafka connectors as Dagster Software-Defined Assets
 - **Automated Health Monitoring**: Intelligent connector monitoring with auto-recovery
 - **Enterprise Operations**: CLI tools for connector management and monitoring
 - **Production Ready**: Thoroughly tested with race condition handling and load testing
 
-### ✨ JSON Schema Validation
+### JSON Schema Validation
 - **4th Serialization Format**: Complete JSON Schema validation support
 - **Data Quality Enforcement**: Automatic validation with configurable strictness
 - **Schema Evolution**: Track and validate schema changes over time
