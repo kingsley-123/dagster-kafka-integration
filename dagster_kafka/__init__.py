@@ -92,4 +92,5 @@ __all__ = [
     "KafkaConfig", 
     "ConsumerConfig",
     "TopicConfig",
-]
+]# Add this line to your existing imports in __init__.py
+from dagster_kafka.connect import ConfluentConnectResource

@@ -1,0 +1,12 @@
+﻿{
+    "name": "test-mirror-source",
+    "config": {
+        "connector.class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+        "tasks.max": "1",
+        "topics": "test-topic",
+        "source.cluster.alias": "source",
+        "target.cluster.alias": "target",
+        "source.cluster.bootstrap.servers": "kafka:9092",
+        "target.cluster.bootstrap.servers": "kafka:9092"
+    }
+}
