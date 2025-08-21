@@ -10,7 +10,7 @@
 
 **The most comprehensively validated Kafka integration for Dagster** - Supporting all four major serialization formats with enterprise-grade features, complete security, operational tooling, and YAML-based Components.
 
-##  What's New in v1.3.0
+##  What's New in v1.3.1
 
 ### Confluent Connect Integration (NEW)
 - **Complete Connect Management**: Native REST API integration for Kafka Connect
@@ -872,7 +872,7 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 **The most comprehensively validated Kafka integration for Dagster** - supporting all four major serialization formats (JSON, JSON Schema, Avro, Protobuf) with enterprise-grade production features, complete security, advanced Dead Letter Queue error handling, Confluent Connect integration, YAML-based Components, and complete operational tooling suite.
 
-**Version 1.3.0** - Confluent Connect Integration Release
+**Version 1.3.1** - Confluent Connect Integration Release
 
 *Built by [Kingsley Okonkwo](https://github.com/kingsley-123) - Solving real data engineering problems with comprehensive open source solutions.*
 </artifact>

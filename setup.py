@@ -8,7 +8,7 @@ README = (HERE / "README.md").read_text(encoding='utf-8')
 setup(
     # Basic Information
     name="dagster-kafka",
-    version="1.3.0",  # Updated version for Confluent Connect release
+    version="1.3.1",
     author="Kingsley Okonkwo",
     author_email="kingskonk@gmail.com",
     maintainer="Kingsley Okonkwo",

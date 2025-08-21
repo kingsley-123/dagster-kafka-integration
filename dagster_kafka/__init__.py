@@ -50,7 +50,7 @@ from .performance import (
 )
 from .component import KafkaComponent, KafkaConfig, ConsumerConfig, TopicConfig
 
-__version__ = "1.3.0"  # Updated version for Confluent Connect release
+__version__ = "1.3.1"  # Updated version for Confluent Connect release
 
 __all__ = [
     "KafkaResource",
