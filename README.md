@@ -1,6 +1,6 @@
 <artifacts>
 <artifact type="text/markdown" title="Updated dagster-kafka README.md with Confluent Connect Integration">
-## Dagster Kafka Integration
+##  Dagster Kafka Integration
 
 [![PyPI version](https://badge.fury.io/py/dagster-kafka.svg)](https://badge.fury.io/py/dagster-kafka)
 [![Python Support](https://img.shields.io/pypi/pyversions/dagster-kafka.svg)](https://pypi.org/project/dagster-kafka/)
