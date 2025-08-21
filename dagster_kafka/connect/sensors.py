@@ -1,10 +1,35 @@
-﻿from typing import List, Dict, Any, Optional
+﻿"""
+Kafka Connect health monitoring sensors for Dagster.
+
+This module provides sensors for monitoring the health of Kafka Connect connectors
+and automatically recovering from failures.
+"""
+from typing import List, Dict, Any, Optional
 from dagster import sensor, SensorResult, RunRequest, JobDefinition, SensorEvaluationContext
-from dagster import Config, asset, materialize
+from dagster import Config
 import datetime
 
 class RemediationConfig(Config):
-    """Configuration for the connector remediation job."""
+    """
+    Configuration for the connector remediation job.
+    
+    This class defines the configuration schema for the remediation job,
+    ensuring proper validation of the unhealthy connectors list.
+    
+    Attributes:
+        unhealthy_connectors (List[Dict[str, Any]]): List of unhealthy connectors to remediate
+        
+    Examples:
+        >>> config = RemediationConfig(
+        ...     unhealthy_connectors=[
+        ...         {
+        ...             "name": "mysql-source",
+        ...             "state": "FAILED",
+        ...             "issue": "Connector state is FAILED"
+        ...         }
+        ...     ]
+        ... )
+    """
     unhealthy_connectors: List[Dict[str, Any]]
 
 def create_connector_health_sensor(
@@ -15,21 +40,63 @@ def create_connector_health_sensor(
     """
     Create a sensor that monitors the health of Kafka Connect connectors.
     
+    This function creates a Dagster sensor that periodically checks the health
+    of specified Kafka Connect connectors and triggers a remediation job when
+    unhealthy connectors are detected.
+    
     Args:
         connector_names: List of connector names to monitor
-        job_def: Job to run when unhealthy connectors are detected
-        minimum_interval_seconds: Minimum time between sensor runs
+        job_def: Job to run when unhealthy connectors are detected (optional)
+        minimum_interval_seconds: Minimum time between sensor runs (default: 60)
         
     Returns:
-        A sensor that monitors connector health
+        A Dagster sensor that monitors connector health
+        
+    Examples:
+        >>> from dagster import Definitions, job, op
+        >>> from dagster_kafka.connect import ConfluentConnectResource, create_connector_health_sensor
+        >>>
+        >>> @job
+        ... def remediate_connectors_job():
+        ...     remediate_connectors()
+        >>>
+        >>> # Create a health sensor
+        >>> health_sensor = create_connector_health_sensor(
+        ...     connector_names=["mysql-source", "elasticsearch-sink"],
+        ...     job_def=remediate_connectors_job,
+        ...     minimum_interval_seconds=30
+        ... )
+        >>>
+        >>> # Define your Dagster job with the sensor
+        >>> defs = Definitions(
+        ...     jobs=[remediate_connectors_job],
+        ...     sensors=[health_sensor],
+        ...     resources={
+        ...         "connect": ConfluentConnectResource(
+        ...             connect_url="http://localhost:8083",
+        ...         )
+        ...     },
+        ... )
     """
     
     @sensor(
-        name="connector_health_sensor",
-        job=job_def,  # Connect to the remediation job
+        name="connect_health_sensor",
         minimum_interval_seconds=minimum_interval_seconds,
+        job=job_def,
     )
     def connector_health_sensor(context: SensorEvaluationContext):
+        """
+        Monitor the health of Kafka Connect connectors.
+        
+        This sensor checks the health of specified connectors and triggers
+        a remediation job when unhealthy connectors are detected.
+        
+        Args:
+            context: The Dagster sensor evaluation context
+            
+        Returns:
+            A SensorResult or RunRequest depending on whether any connectors are unhealthy
+        """
         # Get the connect resource
         connect = context.resources.connect
         
@@ -54,7 +121,7 @@ def create_connector_health_sensor(
                         "issue": f"Connector state is {connector_state}"
                     })
                 
-                # Check task states if there are any tasks
+                # Check task states
                 for task in status.get("tasks", []):
                     task_state = task.get("state")
                     task_id = task.get("id")
@@ -103,14 +170,14 @@ def create_connector_health_sensor(
             )
         
         # Skip this sensor evaluation if no unhealthy connectors
-        return SkipReason(
-            f"All connectors healthy" if not unhealthy_connectors 
-            else "No remediation job provided"
+        return SensorResult(
+            skip_reason=f"All connectors healthy" if not unhealthy_connectors 
+            else "No remediation job provided",
+            cursor=str(context.get_current_time()),
         )
     
     return connector_health_sensor
 
-# Create a sensor and job together as a bundled solution
 def create_connector_health_monitoring(
     connector_names: List[str],
     minimum_interval_seconds: int = 60
@@ -118,12 +185,36 @@ def create_connector_health_monitoring(
     """
     Create a complete connector health monitoring solution with a sensor and remediation job.
     
+    This function creates both a health monitoring sensor and a remediation job that
+    automatically restarts unhealthy connectors.
+    
     Args:
         connector_names: List of connector names to monitor
-        minimum_interval_seconds: Minimum time between sensor runs
+        minimum_interval_seconds: Minimum time between sensor runs (default: 60)
         
     Returns:
         A tuple containing (remediation_job, health_sensor)
+        
+    Examples:
+        >>> from dagster import Definitions
+        >>> from dagster_kafka.connect import ConfluentConnectResource, create_connector_health_monitoring
+        >>>
+        >>> # Create the health monitoring solution
+        >>> remediation_job, health_sensor = create_connector_health_monitoring(
+        ...     connector_names=["mysql-source", "elasticsearch-sink"],
+        ...     minimum_interval_seconds=30
+        ... )
+        >>>
+        >>> # Define your Dagster job with the monitoring components
+        >>> defs = Definitions(
+        ...     jobs=[remediation_job],
+        ...     sensors=[health_sensor],
+        ...     resources={
+        ...         "connect": ConfluentConnectResource(
+        ...             connect_url="http://localhost:8083",
+        ...         )
+        ...     },
+        ... )
     """
     from dagster import job, op
     
@@ -131,6 +222,18 @@ def create_connector_health_monitoring(
     def remediate_unhealthy_connectors(context, config: RemediationConfig):
         """
         Remediate unhealthy connectors by restarting them.
+        
+        This op automatically restarts unhealthy connectors and tasks.
+        
+        Args:
+            context: The Dagster execution context
+            config: Remediation configuration containing unhealthy connectors
+            
+        Returns:
+            Dictionary with remediation results
+            
+        Raises:
+            Exception: If remediation fails
         """
         connect = context.resources.connect
         unhealthy_connectors = config.unhealthy_connectors
@@ -169,6 +272,7 @@ def create_connector_health_monitoring(
     
     @job
     def connector_remediation_job():
+        """Job to remediate unhealthy connectors."""
         remediate_unhealthy_connectors()
     
     # Create the sensor with our job

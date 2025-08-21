@@ -8,14 +8,14 @@ README = (HERE / "README.md").read_text(encoding='utf-8')
 setup(
     # Basic Information
     name="dagster-kafka",
-    version="1.2.2",
+    version="1.3.0",  # Updated version for Confluent Connect release
     author="Kingsley Okonkwo",
     author_email="kingskonk@gmail.com",
     maintainer="Kingsley Okonkwo",
     maintainer_email="kingskonk@gmail.com",
     
     # Description
-    description="Enterprise-grade Kafka integration for Dagster with comprehensive serialization support, DLQ handling, and production monitoring",
+    description="Enterprise-grade Kafka integration for Dagster with Confluent Connect, comprehensive serialization support, DLQ handling, and production monitoring",
     long_description=README,
     long_description_content_type="text/markdown",
     
@@ -78,6 +78,7 @@ setup(
             "dlq-monitor=dagster_kafka.dlq_tools.dlq_monitor:main",
             "dlq-alerts=dagster_kafka.dlq_tools.dlq_alerts:main",
             "dlq-dashboard=dagster_kafka.dlq_tools.dlq_dashboard:main",
+            "connect-cli=dagster_kafka.connect.cli:main",  # New CLI tool for Connect management
         ],
     },
     
@@ -119,6 +120,7 @@ setup(
         "microservices", "distributed-systems", "real-time", 
         "schema-registry", "confluent", "data-validation",
         "sasl", "ssl", "security", "authentication", "authorization",
+        "confluent-connect", "kafka-connect", "connectors", "cdc",
     ],
     
     # License and Metadata

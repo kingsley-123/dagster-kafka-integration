@@ -1,15 +1,72 @@
-﻿from typing import Dict, Any, Optional, List
-from dagster import asset, AssetExecutionContext, Config, ResourceParam
+﻿"""
+Confluent Connect connector assets for Dagster.
+
+This module provides factory functions for creating Dagster assets that represent
+Kafka Connect connectors, enabling connector lifecycle management within the Dagster
+asset framework.
+"""
+from typing import Dict, Any, Optional, List
+from dagster import asset, AssetExecutionContext, Config
 
 class ConnectorConfig(Config):
-    """Configuration for a Kafka Connect connector asset."""
+    """
+    Configuration for a Kafka Connect connector asset.
+    
+    This class defines the configuration schema for connector assets,
+    ensuring proper validation of connector configurations.
+    
+    Attributes:
+        name (str): The name of the connector
+        connector_class (str): The Java class name of the connector
+        config (Dict[str, Any]): Additional connector configuration
+        
+    Examples:
+        >>> config = ConnectorConfig(
+        ...     name="mysql-source",
+        ...     connector_class="io.debezium.connector.mysql.MySqlConnector",
+        ...     config={
+        ...         "database.hostname": "mysql",
+        ...         "database.port": "3306",
+        ...         "database.user": "debezium",
+        ...         "database.password": "dbz",
+        ...         "database.server.id": "184054",
+        ...         "database.server.name": "dbserver1",
+        ...         "database.include.list": "inventory",
+        ...         "database.history.kafka.bootstrap.servers": "kafka:9092",
+        ...         "database.history.kafka.topic": "schema-changes.inventory"
+        ...     }
+        ... )
+    """
     
     name: str
     connector_class: str
     config: Dict[str, Any]
     
     def to_connect_config(self) -> Dict[str, Any]:
-        """Convert to Kafka Connect API format."""
+        """
+        Convert to Kafka Connect API format.
+        
+        Transforms the configuration to the format expected by the Kafka Connect API.
+        
+        Returns:
+            Dictionary in the format expected by the Kafka Connect API
+            
+        Examples:
+            >>> config = ConnectorConfig(
+            ...     name="mysql-source",
+            ...     connector_class="io.debezium.connector.mysql.MySqlConnector",
+            ...     config={"database.hostname": "mysql"}
+            ... )
+            >>> config.to_connect_config()
+            {
+                'name': 'mysql-source',
+                'config': {
+                    'connector.class': 'io.debezium.connector.mysql.MySqlConnector',
+                    'name': 'mysql-source',
+                    'database.hostname': 'mysql'
+                }
+            }
+        """
         connect_config = self.config.copy()
         connect_config["connector.class"] = self.connector_class
         connect_config["name"] = self.name
@@ -26,20 +83,43 @@ def create_connector_asset(
     """
     Factory function that creates a Dagster asset representing a Kafka Connect connector.
     
+    This function creates a Dagster asset that manages the lifecycle of a Kafka Connect
+    connector, handling creation, updates, and status monitoring.
+    
     Args:
-        resource_key: The resource key for the ConfluentConnectResource
-        group_name: The asset group name
+        resource_key: The resource key for the ConfluentConnectResource (default: "connect")
+        group_name: The asset group name (default: "kafka_connect")
         key_prefix: Optional prefix for the asset key
         
     Returns:
         A Dagster asset that manages a Kafka Connect connector
+        
+    Examples:
+        >>> from dagster import Definitions
+        >>> from dagster_kafka.connect import ConfluentConnectResource, create_connector_asset
+        >>>
+        >>> # Create a connector asset
+        >>> mysql_connector = create_connector_asset(
+        ...     group_name="source_connectors",
+        ...     key_prefix=["mysql", "cdc"]
+        ... )
+        >>>
+        >>> # Define your Dagster job with the connector asset
+        >>> defs = Definitions(
+        ...     assets=[mysql_connector],
+        ...     resources={
+        ...         "connect": ConfluentConnectResource(
+        ...             connect_url="http://localhost:8083",
+        ...         )
+        ...     },
+        ... )
     """
     
     @asset(
         group_name=group_name,
         key_prefix=key_prefix,
         compute_kind="kafka_connect",
-        required_resource_keys={resource_key},  # Add this to tell Dagster we need this resource
+        required_resource_keys={resource_key},
     )
     def connector_asset(
         context: AssetExecutionContext,
@@ -49,6 +129,16 @@ def create_connector_asset(
         A Dagster asset representing a Kafka Connect connector.
         
         This asset creates or updates a connector and returns its status.
+        
+        Args:
+            context: The Dagster execution context
+            config: Connector configuration
+            
+        Returns:
+            Dictionary containing connector status information
+            
+        Raises:
+            Exception: If connector creation, update, or status check fails
         """
         # Get the connect resource from context
         connect = getattr(context.resources, resource_key)

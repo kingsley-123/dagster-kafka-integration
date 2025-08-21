@@ -5,6 +5,7 @@ Provides Kafka integration for Dagster data pipelines with support for:
 - Avro message consumption with Schema Registry support
 - Protobuf message consumption with Schema Registry support
 - Schema evolution validation and compatibility checking
+- Confluent Connect integration for connector management and monitoring
 - Production-grade error handling and recovery
 - Comprehensive monitoring and alerting system
 - High-performance caching, batching, and connection pooling
@@ -16,6 +17,8 @@ Provides Kafka integration for Dagster data pipelines with support for:
 from .resources import KafkaResource
 from .resources import SecurityProtocol, SaslMechanism
 from .io_manager import KafkaIOManager
+from dagster_kafka.connect import ConfluentConnectResource
+from dagster_kafka.connect import create_connector_asset, create_connector_health_sensor, create_connector_health_monitoring
 from .avro_io_manager import AvroKafkaIOManager, avro_kafka_io_manager
 from .protobuf_io_manager import ProtobufKafkaIOManager, protobuf_kafka_io_manager, ProtobufSchemaManager, create_protobuf_kafka_io_manager
 from .json_schema_io_manager import JSONSchemaKafkaIOManager, create_json_schema_kafka_io_manager
@@ -47,7 +50,7 @@ from .performance import (
 )
 from .component import KafkaComponent, KafkaConfig, ConsumerConfig, TopicConfig
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"  # Updated version for Confluent Connect release
 
 __all__ = [
     "KafkaResource",
@@ -92,5 +95,8 @@ __all__ = [
     "KafkaConfig", 
     "ConsumerConfig",
     "TopicConfig",
-]# Add this line to your existing imports in __init__.py
-from dagster_kafka.connect import ConfluentConnectResource
+    "ConfluentConnectResource",
+    "create_connector_asset",
+    "create_connector_health_sensor",
+    "create_connector_health_monitoring",
+]
